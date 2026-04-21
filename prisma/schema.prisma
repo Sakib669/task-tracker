@@ -13,23 +13,24 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  email         String          @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  status UserStatus @default(FREE)
-  stripeCustomerId String? @unique
-  tasks Task[]
+  id               String          @id @default(cuid())
+  name             String?
+  email            String          @unique
+  emailVerified    DateTime?
+  image            String?
+  password         String?
+  accounts         Account[]
+  sessions         Session[]
+  status           UserStatus      @default(FREE)
+  stripeCustomerId String?         @unique
+  tasks            Task[]
   // Optional for WebAuthn support
-  Authenticator Authenticator[]
- 
+  Authenticator    Authenticator[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -42,33 +43,33 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
- 
+
 // Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
@@ -79,25 +80,25 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([userId, credentialID])
 }
 
 model Task {
-  id String @id @default(cuid())
-  title String
+  id          String  @id @default(cuid())
+  title       String
   description String?
   isCompleted Boolean @default(false)
-  userId String
-  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum UserStatus{
+enum UserStatus {
   FREE
   PREMIUM
 }

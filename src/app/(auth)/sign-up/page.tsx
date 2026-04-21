@@ -1,83 +1,100 @@
 "use client";
 
 import { useState } from "react";
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { signIn } from 'next-auth/react'
-import { ArrowLeft, Mail, Lock, User, Chrome, Github } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
+import { ArrowLeft, Mail, Lock, User, Chrome, Github } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { createNewUser } from "@/modules/user/user.service";
 
 export default function SignUpPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ name?: string; email?: string; password?: string }>({})
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+  }>({});
 
-  const validateForm = (name: string, email: string, password: string) => {
-    const newErrors: { name?: string; email?: string; password?: string } = {}
+  // const validateForm = (name: string, email: string, password: string) => {
+  //   const newErrors: { name?: string; email?: string; password?: string } = {}
 
-    if (!name) {
-      newErrors.name = 'Full name is required'
-    } else if (name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters'
-    }
+  //   if (!name) {
+  //     newErrors.name = 'Full name is required'
+  //   } else if (name.length < 2) {
+  //     newErrors.name = 'Name must be at least 2 characters'
+  //   }
 
-    if (!email) {
-      newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email'
-    }
+  //   if (!email) {
+  //     newErrors.email = 'Email is required'
+  //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  //     newErrors.email = 'Please enter a valid email'
+  //   }
 
-    if (!password) {
-      newErrors.password = 'Password is required'
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-      newErrors.password = 'Password must include uppercase, lowercase, and a number'
-    }
+  //   if (!password) {
+  //     newErrors.password = 'Password is required'
+  //   } else if (password.length < 8) {
+  //     newErrors.password = 'Password must be at least 8 characters'
+  //   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+  //     newErrors.password = 'Password must include uppercase, lowercase, and a number'
+  //   }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  //   setErrors(newErrors)
+  //   return Object.keys(newErrors).length === 0
+  // }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const formData = new FormData(e.target as HTMLFormElement)
-    const name = formData.get('name') as string
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    
-    if (!validateForm(name, email, password)) return
+    e.preventDefault();
 
-    setIsLoading(true)
+    const formData = new FormData(e.target as HTMLFormElement);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    // if (!validateForm(name, email, password)) return
+
+    setIsLoading(true);
 
     try {
-      // Mock sign up - replace with actual registration logic
-      console.log('Signing up with:', { name, email, password })
+      const newUser = await createNewUser({ name, email, password });
+
+      if (newUser) {
+        alert("user created");
+        console.log(newUser);
+      }
+
+      console.log("Signing up with:", { name, email, password });
       // Add your registration logic here
     } catch (error) {
-      console.error('Sign up error:', error)
+      console.error("Sign up error:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleSocialSignIn = async (provider: 'google' | 'github') => {
-    setIsLoading(true)
+  const handleSocialSignIn = async (provider: "google" | "github") => {
+    setIsLoading(true);
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' })
+      await signIn(provider, { callbackUrl: "/dashboard" });
     } catch (error) {
-      console.error(`${provider} sign in error:`, error)
-      setIsLoading(false)
+      console.error(`${provider} sign in error:`, error);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       {/* Back to Home Link */}
-      <Link 
+      <Link
         href="/"
         className="fixed top-6 left-6 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
       >
@@ -88,7 +105,7 @@ export default function SignUpPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-md"
       >
         <Card className="border-0 shadow-lg bg-white">
@@ -100,14 +117,14 @@ export default function SignUpPage() {
               Enter your details to get started with TaskFlow
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Social Login Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleSocialSignIn('google')}
+                onClick={() => handleSocialSignIn("google")}
                 disabled={isLoading}
               >
                 <Chrome className="mr-2 h-4 w-4" />
@@ -116,7 +133,7 @@ export default function SignUpPage() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleSocialSignIn('github')}
+                onClick={() => handleSocialSignIn("github")}
                 disabled={isLoading}
               >
                 <Github className="mr-2 h-4 w-4" />
@@ -139,7 +156,10 @@ export default function SignUpPage() {
             {/* Registration Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Full Name
                 </Label>
                 <div className="relative">
@@ -149,7 +169,7 @@ export default function SignUpPage() {
                     name="name"
                     type="text"
                     placeholder="John Doe"
-                    className={`pl-10 ${errors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                    className={`pl-10 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     disabled={isLoading}
                   />
                 </div>
@@ -159,7 +179,10 @@ export default function SignUpPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -169,7 +192,7 @@ export default function SignUpPage() {
                     name="email"
                     type="email"
                     placeholder="you@example.com"
-                    className={`pl-10 ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                    className={`pl-10 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     disabled={isLoading}
                   />
                 </div>
@@ -179,7 +202,10 @@ export default function SignUpPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -189,7 +215,7 @@ export default function SignUpPage() {
                     name="password"
                     type="password"
                     placeholder="Create a strong password"
-                    className={`pl-10 ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                    className={`pl-10 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     disabled={isLoading}
                   />
                 </div>
@@ -214,14 +240,14 @@ export default function SignUpPage() {
                     Creating account...
                   </span>
                 ) : (
-                  'Create Account'
+                  "Create Account"
                 )}
               </Button>
             </form>
 
             {/* Sign In Link */}
             <p className="text-center text-sm text-gray-600">
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link
                 href="/sign-in"
                 className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
@@ -233,5 +259,5 @@ export default function SignUpPage() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }
