@@ -20,6 +20,9 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  status UserStatus @default(FREE)
+  stripeCustomerId String? @unique
+  tasks Task[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
  
@@ -80,4 +83,21 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  
   @@id([userId, credentialID])
+}
+
+model Task {
+  id String @id @default(cuid())
+  title String
+  description String?
+  isCompleted Boolean @default(false)
+  userId String
+  user  User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserStatus{
+  FREE
+  PREMIUM
 }
