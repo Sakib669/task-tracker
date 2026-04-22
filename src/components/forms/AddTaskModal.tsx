@@ -1,37 +1,47 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { Calendar, Tag, FileText, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Calendar, Tag, FileText, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { categories } from "@/lib/mock-data"
+} from "@/components/ui/select";
+import { categories } from "@/lib/mock-data";
+import { useSession } from "next-auth/react";
 
 interface AddTaskModalProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function AddTaskModal({ onClose }: AddTaskModalProps) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [category, setCategory] = useState("")
-  const [dueDate, setDueDate] = useState("")
-  const [status, setStatus] = useState<"pending" | "in-progress" | "completed">("pending")
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const { data: session, status: sessionStatus } = useSession();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const post = { title, description, category, userId: session?.user?.id };
     // In a real app, this would create a new task
-    console.log({ title, description, category, dueDate, status })
-    onClose()
-  }
+    const response = await fetch("/api/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(post),
+    });
+    console.log(response);
+    onClose();
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,40 +93,6 @@ export function AddTaskModal({ onClose }: AddTaskModalProps) {
         </div>
       </div>
 
-      {/* Status */}
-      <div className="space-y-2">
-        <Label htmlFor="status">Status</Label>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus(v as "pending" | "in-progress" | "completed")}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="in-progress">In Progress</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Due Date */}
-      <div className="space-y-2">
-        <Label htmlFor="dueDate">Due Date</Label>
-        <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="dueDate"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="pl-9"
-            required
-          />
-        </div>
-      </div>
-
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4">
         <Button type="button" variant="outline" onClick={onClose}>
@@ -132,5 +108,5 @@ export function AddTaskModal({ onClose }: AddTaskModalProps) {
         </motion.button>
       </div>
     </form>
-  )
+  );
 }
