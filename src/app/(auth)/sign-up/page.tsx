@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { createNewUser } from "@/modules/user/user.service";
+import { handleSignUp } from "@/app/actions/auth";
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -25,32 +25,32 @@ export default function SignUpPage() {
     password?: string;
   }>({});
 
-  // const validateForm = (name: string, email: string, password: string) => {
-  //   const newErrors: { name?: string; email?: string; password?: string } = {}
+  const validateForm = (name: string, email: string, password: string) => {
+    const newErrors: { name?: string; email?: string; password?: string } = {}
 
-  //   if (!name) {
-  //     newErrors.name = 'Full name is required'
-  //   } else if (name.length < 2) {
-  //     newErrors.name = 'Name must be at least 2 characters'
-  //   }
+    if (!name) {
+      newErrors.name = 'Full name is required'
+    } else if (name.length < 2) {
+      newErrors.name = 'Name must be at least 2 characters'
+    }
 
-  //   if (!email) {
-  //     newErrors.email = 'Email is required'
-  //   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-  //     newErrors.email = 'Please enter a valid email'
-  //   }
+    if (!email) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email'
+    }
 
-  //   if (!password) {
-  //     newErrors.password = 'Password is required'
-  //   } else if (password.length < 8) {
-  //     newErrors.password = 'Password must be at least 8 characters'
-  //   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-  //     newErrors.password = 'Password must include uppercase, lowercase, and a number'
-  //   }
+    if (!password) {
+      newErrors.password = 'Password is required'
+    } else if (password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters'
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      newErrors.password = 'Password must include uppercase, lowercase, and a number'
+    }
 
-  //   setErrors(newErrors)
-  //   return Object.keys(newErrors).length === 0
-  // }
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,18 +65,30 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      const newUser = await createNewUser({ name, email, password });
+  setIsLoading(true);
+  const result = await handleSignUp({ name, email, password });
 
-      if (newUser) {
-        alert("user created");
-        console.log(newUser);
-      }
+  if (result.success) {
+    const signInResponse = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
-      console.log("Signing up with:", { name, email, password });
-      // Add your registration logic here
-    } catch (error) {
-      console.error("Sign up error:", error);
-    } finally {
+    if (signInResponse?.ok) {
+      alert("Account created and logged in successfully!");
+      window.location.href = "/";
+    } else {
+      alert("Account created, but auto-login failed. Please sign in manually.");
+      window.location.href = "/sign-in";
+    }
+  } else {
+    alert(result.error || "Failed to create account");
+  }
+} catch (error) {
+  console.error("Sign up error:", error);
+  alert("Something went wrong. Please try again.");
+} finally {
       setIsLoading(false);
     }
   };

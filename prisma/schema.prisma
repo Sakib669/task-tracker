@@ -21,6 +21,7 @@ model User {
   password         String?
   accounts         Account[]
   sessions         Session[]
+  role             UserRole        @default(USER)
   status           UserStatus      @default(FREE)
   stripeCustomerId String?         @unique
   tasks            Task[]
@@ -101,4 +102,9 @@ model Task {
 enum UserStatus {
   FREE
   PREMIUM
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

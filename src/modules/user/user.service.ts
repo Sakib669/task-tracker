@@ -32,6 +32,11 @@ export const createNewUser = async ({
       return null;
     }
 
+    const existingUser = await getUserFromDb(email);
+    if (existingUser) {
+      throw new Error("User already exists");
+    }
+
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const newUser = await prisma.user.create({
@@ -39,8 +44,8 @@ export const createNewUser = async ({
     });
 
     return newUser;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error occured creating new user", error);
-    return null;
+    throw new Error(error.message);
   }
 };

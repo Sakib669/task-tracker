@@ -1,74 +1,94 @@
 "use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { motion } from 'framer-motion'
-import { signIn } from 'next-auth/react'
-import { ArrowLeft, Mail, Lock, Chrome, Github } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { signIn } from "next-auth/react";
+import { ArrowLeft, Mail, Lock, Chrome, Github } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 
 export default function SignInPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
 
   const validateForm = (email: string, password: string) => {
-    const newErrors: { email?: string; password?: string } = {}
+    const newErrors: { email?: string; password?: string } = {};
 
     if (!email) {
-      newErrors.email = 'Email is required'
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email'
+      newErrors.email = "Please enter a valid email";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required'
+      newErrors.password = "Password is required";
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = "Password must be at least 6 characters";
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    const formData = new FormData(e.target as HTMLFormElement)
-    const email = formData.get('email') as string
-    const password = formData.get('password') as string
-    
-    if (!validateForm(email, password)) return
+    e.preventDefault();
 
-    setIsLoading(true)
+    const formData = new FormData(e.target as HTMLFormElement);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    // if (!validateForm(email, password)) return;
+
+    setIsLoading(true);
 
     try {
-      // Mock sign in - replace with actual credentials provider
-      console.log('Signing in with:', { email, password })
-      // await signIn('credentials', { email, password, redirect: true, callbackUrl: '/dashboard' })
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      console.log("SignIn Result:", result);
+      alert("SignIn Result:");
+
+      if (result?.error) {
+        alert("Login failed: Invalid email or password");
+      } else {
+        window.location.href = "/";
+      }
     } catch (error) {
-      console.error('Sign in error:', error)
+      console.error("Sign in error:", error);
+      alert("An unexpected error occurred.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleSocialSignIn = async (provider: 'google' | 'github') => {
-    setIsLoading(true)
+  const handleSocialSignIn = async (provider: "google" | "github") => {
+    setIsLoading(true);
     try {
-      await signIn(provider, { callbackUrl: '/dashboard' })
+      await signIn(provider, { callbackUrl: "/dashboard" });
     } catch (error) {
-      console.error(`${provider} sign in error:`, error)
-      setIsLoading(false)
+      console.error(`${provider} sign in error:`, error);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       {/* Back to Home Link */}
-      <Link 
+      <Link
         href="/"
         className="fixed top-6 left-6 flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
       >
@@ -79,7 +99,7 @@ export default function SignInPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
         className="w-full max-w-md"
       >
         <Card className="border-0 shadow-lg bg-white">
@@ -91,14 +111,14 @@ export default function SignInPage() {
               Sign in to your account to continue
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {/* Social Login Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleSocialSignIn('google')}
+                onClick={() => handleSocialSignIn("google")}
                 disabled={isLoading}
               >
                 <Chrome className="mr-2 h-4 w-4" />
@@ -107,7 +127,7 @@ export default function SignInPage() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => handleSocialSignIn('github')}
+                onClick={() => handleSocialSignIn("github")}
                 disabled={isLoading}
               >
                 <Github className="mr-2 h-4 w-4" />
@@ -130,7 +150,10 @@ export default function SignInPage() {
             {/* Email/Password Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email
                 </Label>
                 <div className="relative">
@@ -140,7 +163,7 @@ export default function SignInPage() {
                     name="email"
                     type="email"
                     placeholder="you@example.com"
-                    className={`pl-10 ${errors.email ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                    className={`pl-10 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     disabled={isLoading}
                   />
                 </div>
@@ -150,7 +173,10 @@ export default function SignInPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Password
                 </Label>
                 <div className="relative">
@@ -160,7 +186,7 @@ export default function SignInPage() {
                     name="password"
                     type="password"
                     placeholder="Enter your password"
-                    className={`pl-10 ${errors.password ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
+                    className={`pl-10 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
                     disabled={isLoading}
                   />
                 </div>
@@ -180,14 +206,14 @@ export default function SignInPage() {
                     Signing in...
                   </span>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </Button>
             </form>
 
             {/* Sign Up Link */}
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <Link
                 href="/sign-up"
                 className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
@@ -199,5 +225,5 @@ export default function SignInPage() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

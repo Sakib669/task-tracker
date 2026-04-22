@@ -31,13 +31,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error("Invalid credentials");
         }
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          status: user.status,
-        };
+        console.log("user", user)
+        return user;
+        // return {
+        //   id: user.id,
+        //   email: user.email,
+        //   name: user.name,
+        //   image: user.image,
+        //   status: user.status,
+        // };
       },
     }),
   ],
@@ -55,4 +57,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
+  secret: process.env.AUTH_SECRET,
 });
