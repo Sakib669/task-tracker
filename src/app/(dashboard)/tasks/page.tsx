@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Search, Filter, ChevronDown, Grid, List } from "lucide-react"
+import { Plus, Search, Filter, ChevronDown, Grid, List, Calendar, Tag, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -49,13 +49,13 @@ const itemVariants = {
 function getStatusBadgeVariant(status: Task["status"]) {
   switch (status) {
     case "completed":
-      return "success"
+      return "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300"
     case "in-progress":
-      return "warning"
+      return "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
     case "pending":
-      return "secondary"
+      return "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300"
     default:
-      return "outline"
+      return ""
   }
 }
 
@@ -69,6 +69,19 @@ function getStatusLabel(status: Task["status"]) {
       return "Pending"
     default:
       return status
+  }
+}
+
+function getStatusIcon(status: Task["status"]) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="h-3 w-3 mr-1" />
+    case "in-progress":
+      return <Clock className="h-3 w-3 mr-1" />
+    case "pending":
+      return <AlertCircle className="h-3 w-3 mr-1" />
+    default:
+      return null
   }
 }
 
@@ -104,26 +117,28 @@ export default function TasksPage() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-6"
+      className="space-y-7"
     >
       {/* Page Header */}
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+            My Tasks
+          </h1>
+          <p className="text-muted-foreground mt-1">
             Manage and track all your tasks in one place.
           </p>
         </div>
         <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md gap-2">
               <Plus className="h-4 w-4" />
               Add Task
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Create New Task</DialogTitle>
+              <DialogTitle className="text-2xl font-bold">Create New Task</DialogTitle>
             </DialogHeader>
             <AddTaskModal onClose={() => setIsAddModalOpen(false)} />
           </DialogContent>
@@ -136,15 +151,15 @@ export default function TasksPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search tasks..."
+            placeholder="Search tasks by title..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-11 bg-white/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 focus:border-indigo-500"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[140px] h-11">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -156,7 +171,7 @@ export default function TasksPage() {
             </SelectContent>
           </Select>
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[150px]">
+            <SelectTrigger className="w-[160px] h-11">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
@@ -168,12 +183,12 @@ export default function TasksPage() {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex border rounded-md">
+          <div className="flex border rounded-md overflow-hidden">
             <Button
               variant={viewMode === "list" ? "default" : "ghost"}
               size="icon"
               onClick={() => setViewMode("list")}
-              className="rounded-r-none"
+              className="rounded-none h-11 w-11"
             >
               <List className="h-4 w-4" />
             </Button>
@@ -181,7 +196,7 @@ export default function TasksPage() {
               variant={viewMode === "grid" ? "default" : "ghost"}
               size="icon"
               onClick={() => setViewMode("grid")}
-              className="rounded-l-none border-l"
+              className="rounded-none h-11 w-11 border-l"
             >
               <Grid className="h-4 w-4" />
             </Button>
@@ -205,38 +220,41 @@ export default function TasksPage() {
                 initial="hidden"
                 animate="visible"
                 exit={{ opacity: 0, x: -20 }}
-                whileHover={{ x: 4 }}
-                className="group"
+                whileHover={{ scale: 1.01 }}
+                transition={{ duration: 0.2 }}
               >
-                <Card className="transition-all hover:shadow-md">
-                  <CardContent className="flex items-center gap-4 p-4">
+                <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300">
+                  <CardContent className="flex items-center gap-4 p-5">
                     <Checkbox
                       checked={task.status === "completed"}
-                      className="shrink-0"
+                      className="h-5 w-5 border-2 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p
-                          className={`font-medium truncate ${
+                          className={`font-semibold truncate ${
                             task.status === "completed"
                               ? "line-through text-muted-foreground"
-                              : ""
+                              : "text-foreground"
                           }`}
                         >
                           {task.title}
                         </p>
-                        <Badge variant={getStatusBadgeVariant(task.status)} className="shrink-0">
+                        <Badge className={`text-xs ${getStatusBadgeVariant(task.status)}`}>
+                          {getStatusIcon(task.status)}
                           {getStatusLabel(task.status)}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className="text-sm text-muted-foreground truncate mt-1">
                         {task.description}
                       </p>
                     </div>
-                    <Badge variant="outline" className="shrink-0">
+                    <Badge variant="outline" className="shrink-0 gap-1">
+                      <Tag className="h-3 w-3" />
                       {task.category}
                     </Badge>
-                    <span className="text-sm text-muted-foreground shrink-0 hidden sm:block">
+                    <span className="text-sm text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
                       {new Date(task.dueDate).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -251,7 +269,7 @@ export default function TasksPage() {
       ) : (
         <motion.div
           variants={containerVariants}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           <AnimatePresence>
             {displayedTasks.map((task) => (
@@ -261,33 +279,35 @@ export default function TasksPage() {
                 initial="hidden"
                 animate="visible"
                 exit={{ opacity: 0, scale: 0.9 }}
-                whileHover={{ y: -4, scale: 1.02 }}
+                whileHover={{ y: -4 }}
+                transition={{ duration: 0.2 }}
               >
-                <Card className="h-full">
-                  <CardContent className="p-4 space-y-3">
+                <Card className="h-full border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+                  <CardContent className="p-5 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <p
-                        className={`font-medium line-clamp-2 ${
+                        className={`font-semibold line-clamp-2 flex-1 ${
                           task.status === "completed"
                             ? "line-through text-muted-foreground"
-                            : ""
+                            : "text-foreground"
                         }`}
                       >
                         {task.title}
                       </p>
-                      <Badge
-                        variant={getStatusBadgeVariant(task.status)}
-                        className="shrink-0"
-                      >
+                      <Badge className={`text-xs shrink-0 ${getStatusBadgeVariant(task.status)}`}>
                         {getStatusLabel(task.status)}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
                       {task.description}
                     </p>
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">{task.category}</Badge>
-                      <span className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between pt-2">
+                      <Badge variant="outline" className="gap-1">
+                        <Tag className="h-3 w-3" />
+                        {task.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
                         {new Date(task.dueDate).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -308,7 +328,7 @@ export default function TasksPage() {
           <Button
             variant="outline"
             onClick={handleLoadMore}
-            className="gap-2"
+            className="gap-2 h-11 px-6"
           >
             Load More
             <ChevronDown className="h-4 w-4" />
@@ -320,15 +340,14 @@ export default function TasksPage() {
       {filteredTasks.length === 0 && (
         <motion.div
           variants={itemVariants}
-          className="flex flex-col items-center justify-center py-12 text-center"
+          className="flex flex-col items-center justify-center py-16 text-center"
         >
-          <div className="rounded-full bg-muted p-6 mb-4">
-            <Search className="h-8 w-8 text-muted-foreground" />
+          <div className="rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 p-6 mb-4">
+            <Search className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h3 className="text-lg font-semibold">No tasks found</h3>
-          <p className="text-muted-foreground max-w-sm">
-            Try adjusting your filters or search terms to find what you're looking
-            for.
+          <h3 className="text-xl font-semibold mt-2">No tasks found</h3>
+          <p className="text-muted-foreground max-w-sm mt-2">
+            Try adjusting your filters or search terms to find what you're looking for.
           </p>
         </motion.div>
       )}

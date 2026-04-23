@@ -123,10 +123,10 @@ export function Navbar() {
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link href="/signin">Sign In</Link>
+                <Link href="/sign-in">Sign In</Link>
               </Button>
               <Button variant="default" asChild>
-                <Link href="/signup">Sign Up</Link>
+                <Link href="/sign-up">Sign Up</Link>
               </Button>
             </>
           )}
@@ -216,10 +216,10 @@ export function Navbar() {
               ) : (
                 <div className="flex gap-2">
                   <Button variant="ghost" className="flex-1" asChild>
-                    <Link href="/signin">Sign In</Link>
+                    <Link href="/sign-in">Sign In</Link>
                   </Button>
                   <Button variant="default" className="flex-1" asChild>
-                    <Link href="/signup">Sign Up</Link>
+                    <Link href="/sign-up">Sign Up</Link>
                   </Button>
                 </div>
               )}
