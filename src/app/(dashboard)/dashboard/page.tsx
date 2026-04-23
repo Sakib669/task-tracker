@@ -11,7 +11,6 @@ import {
   Calendar,
   Tag,
   FileText,
-  X,
   Inbox,
   Sparkles,
 } from "lucide-react";
@@ -28,6 +27,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -36,6 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 interface Task {
   id: string;
@@ -107,8 +108,8 @@ function StatCard({
               </p>
               <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
               {trend && (
-                <p className="mt-2 text-xs text-green-600">
-                  {trend.value}% {trend.label}
+                <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+                  ↑ {trend.value}% {trend.label}
                 </p>
               )}
             </div>
@@ -267,183 +268,16 @@ function EmptyState({ onCreateTask }: { onCreateTask: () => void }) {
   );
 }
 
-function CreateTaskDialog({
-  onTaskCreated,
-  open,
-  onOpenChange,
-}: {
-  onTaskCreated: () => void;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-}) {
-  const [internalOpen, setInternalOpen] = useState(false);
+export default function DashboardPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const isControlled = open !== undefined;
-  const isOpen = isControlled ? open : internalOpen;
-
-  const handleOpenChange = (newOpen: boolean) => {
-    if (isControlled) {
-      onOpenChange?.(newOpen);
-    } else {
-      setInternalOpen(newOpen);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/posts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title,
-          description: description || null,
-          category: category || null,
-          dueDate: dueDate || null,
-          status: "pending",
-        }),
-      });
-
-      if (response.ok) {
-        setTitle("");
-        setDescription("");
-        setCategory("");
-        setDueDate("");
-        handleOpenChange(false);
-        onTaskCreated();
-      }
-    } catch (error) {
-      console.error("Error creating task:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[550px]">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
-            Create New Task
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            Fill in the details below to add a new task to your workspace.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-semibold">
-              Task Title
-            </Label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                id="title"
-                placeholder="Enter task title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="pl-9 h-11"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-semibold">
-              Description (Optional)
-            </Label>
-            <textarea
-              id="description"
-              placeholder="Enter task description..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-sm font-semibold">
-                Category
-              </Label>
-              <div className="relative">
-                <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="pl-9 h-11">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dueDate" className="text-sm font-semibold">
-                Due Date
-              </Label>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  id="dueDate"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="pl-9 h-11"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              className="h-10"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-10 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  Creating...
-                </span>
-              ) : (
-                "Create Task"
-              )}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export default function DashboardPage() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -485,119 +319,259 @@ export default function DashboardPage() {
     setTasks(updatedTasks);
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          description: description || null,
+          category: category || null,
+          dueDate: dueDate || null,
+          status: "pending",
+        }),
+      });
+
+      if (response.ok) {
+        setTitle("");
+        setDescription("");
+        setCategory("");
+        setDueDate("");
+        setDialogOpen(false);
+        fetchTasks();
+      }
+    } catch (error) {
+      console.error("Error creating task:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const stats = {
     total: tasks.length,
     completed: tasks.filter((t) => t.isCompleted).length,
     pending: tasks.filter((t) => !t.isCompleted).length,
   };
 
-  // Fix: Calculate completion rate AFTER stats is defined
   const completionRate =
     stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-      className="space-y-8"
-    >
-      {/* Welcome Section */}
+    <>
       <motion.div
-        variants={itemVariants}
-        className="flex items-center justify-between flex-wrap gap-4"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="space-y-8"
       >
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back! Here's your productivity overview.
-          </p>
-        </div>
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md"
+        {/* Welcome Section */}
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-between flex-wrap gap-4"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          New Task
-        </Button>
-      </motion.div>
+          <div>
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome back! Here's your productivity overview.
+            </p>
+          </div>
+          <Button
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md"
+            asChild
+          >
+            <Link href={'/tasks'}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Task
+            </Link>
+          </Button>
+        </motion.div>
 
-      {/* Stats Grid */}
-      <div className="grid gap-5 md:grid-cols-3">
-        <StatCard
-          title="Total Tasks"
-          value={stats.total}
-          icon={TrendingUp}
-          gradient="from-blue-500 to-cyan-500"
-          trend={{ value: 12, label: "vs last week" }}
-        />
-        <StatCard
-          title="Completed"
-          value={stats.completed}
-          icon={CheckCircle2}
-          gradient="from-emerald-500 to-teal-500"
-          trend={{ value: completionRate, label: "completion rate" }}
-        />
-        <StatCard
-          title="Pending"
-          value={stats.pending}
-          icon={AlertCircle}
-          gradient="from-amber-500 to-orange-500"
-        />
-      </div>
+        {/* Stats Grid */}
+        <div className="grid gap-5 md:grid-cols-3">
+          <StatCard
+            title="Total Tasks"
+            value={stats.total}
+            icon={TrendingUp}
+            gradient="from-blue-500 to-cyan-500"
+            trend={{ value: 12, label: "vs last week" }}
+          />
+          <StatCard
+            title="Completed"
+            value={stats.completed}
+            icon={CheckCircle2}
+            gradient="from-emerald-500 to-teal-500"
+            trend={{ value: completionRate, label: "completion rate" }}
+          />
+          <StatCard
+            title="Pending"
+            value={stats.pending}
+            icon={AlertCircle}
+            gradient="from-amber-500 to-orange-500"
+          />
+        </div>
 
-      {/* Tasks Section */}
-      <motion.div variants={itemVariants}>
-        <Card className="border-0 shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl font-semibold">
-              <Sparkles className="h-5 w-5 text-indigo-600" />
-              Your Tasks
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <AnimatePresence mode="wait">
-              {loading ? (
-                <div className="space-y-4">
-                  <TaskCardSkeleton />
-                  <TaskCardSkeleton />
-                  <TaskCardSkeleton />
-                </div>
-              ) : error ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="rounded-full bg-red-100 dark:bg-red-950 p-4 mb-4">
-                    <AlertCircle className="h-8 w-8 text-red-600" />
+        {/* Tasks Section */}
+        <motion.div variants={itemVariants}>
+          <Card className="border-0 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl font-semibold">
+                <Sparkles className="h-5 w-5 text-indigo-600" />
+                Your Tasks
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AnimatePresence mode="wait">
+                {loading ? (
+                  <div className="space-y-4">
+                    <TaskCardSkeleton />
+                    <TaskCardSkeleton />
+                    <TaskCardSkeleton />
                   </div>
-                  <p className="text-red-600 mb-4 text-center">{error}</p>
-                  <Button onClick={fetchTasks} variant="outline">
-                    Retry
-                  </Button>
-                </div>
-              ) : tasks.length === 0 ? (
-                <EmptyState onCreateTask={() => setCreateDialogOpen(true)} />
-              ) : (
-                <div className="space-y-4">
-                  {tasks.map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      onToggle={handleToggleTask}
-                    />
-                  ))}
-                </div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
+                ) : error ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <div className="rounded-full bg-red-100 dark:bg-red-950 p-4 mb-4">
+                      <AlertCircle className="h-8 w-8 text-red-600" />
+                    </div>
+                    <p className="text-red-600 mb-4 text-center">{error}</p>
+                    <Button onClick={fetchTasks} variant="outline">
+                      Retry
+                    </Button>
+                  </div>
+                ) : tasks.length === 0 ? (
+                  <EmptyState onCreateTask={() => setDialogOpen(true)} />
+                ) : (
+                  <div className="space-y-4">
+                    {tasks.map((task) => (
+                      <TaskCard
+                        key={task.id}
+                        task={task}
+                        onToggle={handleToggleTask}
+                      />
+                    ))}
+                  </div>
+                )}
+              </AnimatePresence>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
-      <CreateTaskDialog
-        onTaskCreated={fetchTasks}
-        open={createDialogOpen}
-        onOpenChange={setCreateDialogOpen}
-      />
-    </motion.div>
+      {/* Create Task Dialog - Moved outside the motion.div */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              Create New Task
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Fill in the details below to add a new task to your workspace.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-sm font-semibold">
+                Task Title
+              </Label>
+              <div className="relative">
+                <FileText className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="title"
+                  placeholder="Enter task title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="pl-9 h-11"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-sm font-semibold">
+                Description (Optional)
+              </Label>
+              <textarea
+                id="description"
+                placeholder="Enter task description..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-sm font-semibold">
+                  Category
+                </Label>
+                <div className="relative">
+                  <Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger className="pl-9 h-11">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dueDate" className="text-sm font-semibold">
+                  Due Date (Optional)
+                </Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="pl-9 h-11"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+                className="h-10"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-10 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Creating...
+                  </span>
+                ) : (
+                  "Create Task"
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
