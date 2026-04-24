@@ -27,7 +27,7 @@ import {
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/dashboard", label: "Dashboard", icon: FolderKanban },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
 ];
 

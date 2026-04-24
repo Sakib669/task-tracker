@@ -27,7 +27,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -36,7 +35,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Link from "next/link";
+import { toast } from "sonner";
+import { TaskActions } from "@/components/tasks/TaskActions";
+import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
 
 interface Task {
   id: string;
@@ -97,15 +98,11 @@ function StatCard({
   return (
     <motion.div variants={itemVariants}>
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`}
-        />
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`} />
         <CardContent className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                {title}
-              </p>
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
               <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
               {trend && (
                 <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
@@ -113,9 +110,7 @@ function StatCard({
                 </p>
               )}
             </div>
-            <div
-              className={`rounded-2xl bg-gradient-to-br ${gradient} p-3 shadow-lg`}
-            >
+            <div className={`rounded-2xl bg-gradient-to-br ${gradient} p-3 shadow-lg`}>
               <Icon className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -128,9 +123,13 @@ function StatCard({
 function TaskCard({
   task,
   onToggle,
+  onEdit,
+  onDelete,
 }: {
   task: Task;
   onToggle: (id: string, completed: boolean) => void;
+  onEdit: (task: Task) => void;
+  onDelete: (id: string) => Promise<void>;
 }) {
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
@@ -144,8 +143,7 @@ function TaskCard({
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const isOverdue =
-    task.dueDate && new Date(task.dueDate) < new Date() && !task.isCompleted;
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.isCompleted;
 
   return (
     <motion.div
@@ -158,9 +156,7 @@ function TaskCard({
           <div className="flex items-start gap-4">
             <Checkbox
               checked={task.isCompleted}
-              onCheckedChange={(checked) =>
-                onToggle(task.id, checked as boolean)
-              }
+              onCheckedChange={(checked) => onToggle(task.id, checked as boolean)}
               className="mt-1 h-5 w-5 border-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
             />
             <div className="flex-1 min-w-0">
@@ -170,6 +166,11 @@ function TaskCard({
                 >
                   {task.title}
                 </h3>
+                <TaskActions
+                  taskId={task.id}
+                  onEdit={() => onEdit(task)}
+                  onDelete={onDelete}
+                />
               </div>
               {task.description && (
                 <p className="mt-1.5 text-sm text-muted-foreground line-clamp-2">
@@ -199,7 +200,9 @@ function TaskCard({
                   className={`text-xs ${
                     task.isCompleted
                       ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300"
-                      : "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
+                      : task.status === "in-progress"
+                      ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
+                      : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300"
                   }`}
                 >
                   {task.isCompleted ? (
@@ -207,10 +210,15 @@ function TaskCard({
                       <CheckCircle2 className="h-3 w-3 mr-1" />
                       Completed
                     </>
-                  ) : (
+                  ) : task.status === "in-progress" ? (
                     <>
                       <Clock className="h-3 w-3 mr-1" />
                       In Progress
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Pending
                     </>
                   )}
                 </Badge>
@@ -245,17 +253,13 @@ function TaskCardSkeleton() {
 
 function EmptyState({ onCreateTask }: { onCreateTask: () => void }) {
   return (
-    <motion.div
-      variants={itemVariants}
-      className="flex flex-col items-center justify-center py-16"
-    >
+    <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16">
       <div className="rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 p-6 mb-4">
         <Inbox className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
       </div>
       <h3 className="text-xl font-semibold mb-2">No tasks yet</h3>
       <p className="text-muted-foreground text-center max-w-sm mb-6">
-        Create your first task to get started and organize your work
-        efficiently.
+        Create your first task to get started and organize your work efficiently.
       </p>
       <Button
         onClick={onCreateTask}
@@ -273,6 +277,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -288,7 +293,7 @@ export default function DashboardPage() {
       if (data.success) {
         const mappedTasks = data.data.map((task: any) => ({
           ...task,
-          status: task.isCompleted ? "completed" : "pending",
+          status: task.isCompleted ? "completed" : task.status || "pending",
         }));
         setTasks(mappedTasks);
       } else {
@@ -307,6 +312,7 @@ export default function DashboardPage() {
   }, [fetchTasks]);
 
   const handleToggleTask = async (id: string, completed: boolean) => {
+    // Optimistic update
     const updatedTasks = tasks.map((task) =>
       task.id === id
         ? {
@@ -314,21 +320,48 @@ export default function DashboardPage() {
             isCompleted: completed,
             status: completed ? "completed" : "pending",
           }
-        : task,
+        : task
     );
     setTasks(updatedTasks);
+
+    try {
+      await fetch(`/api/posts/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isCompleted: completed,
+          status: completed ? "completed" : "pending",
+        }),
+      });
+    } catch (error) {
+      // Revert on error
+      fetchTasks();
+      console.error("Error toggling task:", error);
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleDeleteTask = async (id: string) => {
+    try {
+      const response = await fetch(`/api/posts/${id}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        setTasks((prev) => prev.filter((task) => task.id !== id));
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       const response = await fetch("/api/posts", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
           description: description || null,
@@ -359,38 +392,25 @@ export default function DashboardPage() {
     pending: tasks.filter((t) => !t.isCompleted).length,
   };
 
-  const completionRate =
-    stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
   return (
     <>
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="space-y-8"
-      >
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-8">
         {/* Welcome Section */}
-        <motion.div
-          variants={itemVariants}
-          className="flex items-center justify-between flex-wrap gap-4"
-        >
+        <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
               Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Welcome back! Here's your productivity overview.
-            </p>
+            <p className="text-muted-foreground mt-1">Welcome back! Here's your productivity overview.</p>
           </div>
           <Button
+            onClick={() => setDialogOpen(true)}
             className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md"
-            asChild
           >
-            <Link href={'/tasks'}>
             <Plus className="h-4 w-4 mr-2" />
             New Task
-            </Link>
           </Button>
         </motion.div>
 
@@ -454,6 +474,8 @@ export default function DashboardPage() {
                         key={task.id}
                         task={task}
                         onToggle={handleToggleTask}
+                        onEdit={setEditingTask}
+                        onDelete={handleDeleteTask}
                       />
                     ))}
                   </div>
@@ -464,18 +486,14 @@ export default function DashboardPage() {
         </motion.div>
       </motion.div>
 
-      {/* Create Task Dialog - Moved outside the motion.div */}
+      {/* Create Task Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              Create New Task
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Fill in the details below to add a new task to your workspace.
-            </DialogDescription>
+            <DialogTitle className="text-2xl font-bold">Create New Task</DialogTitle>
+            <DialogDescription>Fill in the details below to add a new task to your workspace.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+          <form onSubmit={handleCreateTask} className="space-y-5 mt-4">
             <div className="space-y-2">
               <Label htmlFor="title" className="text-sm font-semibold">
                 Task Title
@@ -484,7 +502,6 @@ export default function DashboardPage() {
                 <FileText className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="title"
-                  placeholder="Enter task title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="pl-9 h-11"
@@ -499,10 +516,9 @@ export default function DashboardPage() {
               </Label>
               <textarea
                 id="description"
-                placeholder="Enter task description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               />
             </div>
 
@@ -546,32 +562,28 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setDialogOpen(false)}
-                className="h-10"
-              >
+              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="h-10 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
               >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Creating...
-                  </span>
-                ) : (
-                  "Create Task"
-                )}
+                {isSubmitting ? "Creating..." : "Create Task"}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Task Dialog */}
+      <EditTaskDialog
+        task={editingTask}
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+        onTaskUpdated={fetchTasks}
+      />
     </>
   );
 }
