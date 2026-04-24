@@ -4,7 +4,8 @@ import { motion } from "framer-motion"
 import { Tag, Trash2, Edit, Plus, TrendingUp, CheckCircle2, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { categories, tasks } from "@/lib/mock-data"
+import { categories, Task } from "@/lib/mock-data"
+import { useEffect, useState } from "react"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -28,6 +29,17 @@ const itemVariants = {
 }
 
 export default function CategoriesPage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  
+    useEffect(() => {
+      const fetchTasks = async () => {
+        const response = await fetch("/api/posts");
+        const data = await response.json();
+        setTasks(data?.data);
+      };
+  
+      fetchTasks();
+    }, []);
   const getCategoryStats = (category: string) => {
     const categoryTasks = tasks.filter((t) => t.category === category)
     const completed = categoryTasks.filter((t) => t.status === "completed").length
@@ -65,10 +77,6 @@ export default function CategoriesPage() {
             Organize your tasks by categories for better management.
           </p>
         </div>
-        <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md gap-2">
-          <Plus className="h-4 w-4" />
-          Add Category
-        </Button>
       </motion.div>
 
       {/* Categories Grid */}

@@ -405,13 +405,6 @@ export default function DashboardPage() {
             </h1>
             <p className="text-muted-foreground mt-1">Welcome back! Here's your productivity overview.</p>
           </div>
-          <Button
-            onClick={() => setDialogOpen(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Task
-          </Button>
         </motion.div>
 
         {/* Stats Grid */}

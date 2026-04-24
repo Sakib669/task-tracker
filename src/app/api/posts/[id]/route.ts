@@ -2,6 +2,32 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "../../../../../auth";
 import { NextRequest, NextResponse } from "next/server";
 
+// Allowed fields for update (prevent mass assignment attacks)
+const ALLOWED_UPDATE_FIELDS = ['title', 'description', 'category', 'status', 'dueDate', 'isCompleted'];
+
+// Helper to validate and transform update data
+function prepareUpdateData(data: any) {
+  const updateData: any = {};
+  
+  for (const field of ALLOWED_UPDATE_FIELDS) {
+    if (data[field] !== undefined) {
+      updateData[field] = data[field];
+    }
+  }
+  
+  // Sync isCompleted with status
+  if (updateData.status) {
+    updateData.isCompleted = updateData.status === "completed";
+  }
+  
+  // Convert dueDate string to Date object
+  if (updateData.dueDate && typeof updateData.dueDate === 'string') {
+    updateData.dueDate = new Date(updateData.dueDate);
+  }
+  
+  return updateData;
+}
+
 // GET - Get a specific task by ID
 export const GET = async (
   req: NextRequest,
@@ -10,7 +36,6 @@ export const GET = async (
   try {
     const { id: taskId } = await params;
     
-    // Authentication check
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -19,7 +44,6 @@ export const GET = async (
       );
     }
     
-    // Validate task ID
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
@@ -27,11 +51,10 @@ export const GET = async (
       );
     }
     
-    // Fetch the specific task and verify ownership
     const task = await prisma.task.findFirst({
       where: {
         id: taskId,
-        userId: session.user.id, // Ensure task belongs to user
+        userId: session.user.id,
       },
     });
     
@@ -63,9 +86,8 @@ export const PATCH = async (
 ) => {
   try {
     const { id: taskId } = await params;
-    const updatedTaskData = await req.json();
+    const rawUpdateData = await req.json();
     
-    // Authentication check
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -74,10 +96,21 @@ export const PATCH = async (
       );
     }
     
-    // Validate task ID
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
+        { status: 400 }
+      );
+    }
+    
+    // Validate no invalid fields
+    const invalidFields = Object.keys(rawUpdateData).filter(
+      key => !ALLOWED_UPDATE_FIELDS.includes(key)
+    );
+    
+    if (invalidFields.length > 0) {
+      return NextResponse.json(
+        { error: `Invalid fields: ${invalidFields.join(', ')}` },
         { status: 400 }
       );
     }
@@ -97,11 +130,15 @@ export const PATCH = async (
       );
     }
     
-    // Update the task
+    // Prepare and validate update data
+    const updateData = prepareUpdateData(rawUpdateData);
+    
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
-      data: updatedTaskData,
+      data: updateData,
     });
+    
+    console.log(`Task ${taskId} updated by user ${session.user.id}`);
     
     return NextResponse.json(
       { success: true, data: updatedTask },
@@ -125,7 +162,6 @@ export const DELETE = async (
   try {
     const { id: taskId } = await params;
     
-    // Authentication check
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -134,7 +170,6 @@ export const DELETE = async (
       );
     }
     
-    // Validate task ID
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
@@ -142,7 +177,6 @@ export const DELETE = async (
       );
     }
     
-    // Verify task exists and belongs to user
     const existingTask = await prisma.task.findFirst({
       where: {
         id: taskId,
@@ -157,13 +191,14 @@ export const DELETE = async (
       );
     }
     
-    // Delete the task
-    const deletedTask = await prisma.task.delete({
+    await prisma.task.delete({
       where: { id: taskId },
     });
     
+    console.log(`Task ${taskId} deleted by user ${session.user.id}`);
+    
     return NextResponse.json(
-      { success: true, message: "Task deleted successfully", data: deletedTask },
+      { success: true, message: "Task deleted successfully" },
       { status: 200 }
     );
     

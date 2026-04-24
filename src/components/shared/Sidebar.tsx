@@ -37,11 +37,6 @@ const navItems = [
     href: "/categories",
     icon: Tags,
   },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: Settings,
-  },
 ]
 
 export function Sidebar() {
