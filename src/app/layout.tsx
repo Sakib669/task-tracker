@@ -5,9 +5,14 @@ import { Navbar } from "@/components/Navbar";
 import { Providers } from "@/components/Providers";
 import { cn } from "@/lib/utils";
 
+import { Toaster } from "sonner";
+
+
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({ subsets: ["latin"] });
+
+
 
 export const metadata: Metadata = {
   title: "TaskFlow - Task Management",
@@ -23,8 +28,11 @@ export default function RootLayout({
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={inter.className}>
         <Providers>
+
           <Navbar />
           <main>{children}</main>
+          <Toaster position="top-right" richColors />
+
         </Providers>
       </body>
     </html>

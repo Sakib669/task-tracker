@@ -1,19 +1,5 @@
 {
-  "node": {
-    "403febacaa8348897f00644a45d1197a9ca3a6bd7e": {
-      "workers": {
-        "app/(auth)/sign-up/page": {
-          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22C%3A%5C%5CUsers%5C%5CSakib%5C%5CDesktop%5C%5CProjects%5C%5Ctask-tracker%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Cauth.ts%22%2C%5B%7B%22id%22%3A%22403febacaa8348897f00644a45d1197a9ca3a6bd7e%22%2C%22exportedName%22%3A%22handleSignUp%22%2C%22filename%22%3A%22..%2FC%3A%5C%5CUsers%5C%5CSakib%5C%5CDesktop%5C%5CProjects%5C%5Ctask-tracker%5C%5Csrc%5C%5Capp%5C%5Cactions%5C%5Cauth.ts%22%7D%5D%5D%5D&__client_imported__=true!",
-          "async": true
-        }
-      },
-      "layer": {
-        "app/(auth)/sign-up/page": "action-browser"
-      },
-      "filename": "../C:\\Users\\Sakib\\Desktop\\Projects\\task-tracker\\src\\app\\actions\\auth.ts",
-      "exportedName": "handleSignUp"
-    }
-  },
+  "node": {},
   "edge": {},
   "encryptionKey": "wKoT71r9IRFY+WHw3hGw24jGDno4zfgyI3QBv8PTC6Y="
 }

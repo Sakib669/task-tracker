@@ -1,10 +1,12 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Check, Zap, Crown, Sparkles, Infinity, Users, BarChart, Code, Headphones, Rocket } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Check, Zap, Crown, Sparkles, Shield, CreditCard, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PricingCard } from "@/components/payment/PricingCard";
+import { useSession } from "next-auth/react";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -14,7 +16,7 @@ const containerVariants = {
       staggerChildren: 0.1,
     },
   },
-}
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -25,140 +27,180 @@ const itemVariants = {
       duration: 0.4,
     },
   },
-}
+};
 
 const freeFeatures = [
-  { icon: Check, text: "Up to 3 active tasks" },
-  { icon: Check, text: "Basic task management" },
-  { icon: Check, text: "5 categories" },
-  { icon: Check, text: "Email notifications" },
-  { icon: Check, text: "Mobile access" },
-]
+  "Up to 3 active tasks",
+  "Basic task management",
+  "5 categories",
+  "Email notifications",
+  "Mobile access",
+  "Basic support",
+];
 
 const premiumFeatures = [
-  { icon: Infinity, text: "Unlimited tasks", highlight: true },
-  { icon: Zap, text: "Advanced task management", highlight: true },
-  { icon: Infinity, text: "Unlimited categories", highlight: true },
-  { icon: Headphones, text: "Priority email support", highlight: false },
-  { icon: Rocket, text: "Mobile access", highlight: false },
-  { icon: BarChart, text: "Advanced analytics", highlight: true },
-  { icon: Users, text: "Team collaboration", highlight: true },
-  { icon: Code, text: "Custom workflows", highlight: false },
-  { icon: Zap, text: "API access", highlight: true },
-  { icon: Headphones, text: "Priority support", highlight: false },
-]
+  "Unlimited tasks",
+  "Advanced task management",
+  "Unlimited categories",
+  "Priority email support",
+  "Mobile access",
+  "Advanced analytics",
+  "Team collaboration",
+  "Custom workflows",
+  "API access",
+  "24/7 Priority support",
+  "Export data",
+  "Custom branding",
+];
+
+const faqs = [
+  {
+    question: "Can I cancel anytime?",
+    answer: "Yes, you can cancel your premium subscription at any time. Your access will continue until the end of your billing period.",
+  },
+  {
+    question: "Is there a free trial?",
+    answer: "We offer a 14-day free trial for new premium users. No credit card required to start.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer: "We accept all major credit cards (Visa, Mastercard, American Express) and PayPal.",
+  },
+  {
+    question: "Can I switch plans later?",
+    answer: "Absolutely! You can upgrade or downgrade your plan at any time from your settings page.",
+  },
+  {
+    question: "Is my data secure?",
+    answer: "Yes, we use Stripe for secure payment processing. Your payment information is never stored on our servers.",
+  },
+  {
+    question: "Do you offer refunds?",
+    answer: "We offer a 30-day money-back guarantee if you're not satisfied with our premium features.",
+  },
+];
 
 export default function UpgradePage() {
+  const { data: session, update } = useSession();
+  const [loading, setLoading] = useState(false);
+  const [userStatus, setUserStatus] = useState<string>("FREE");
+
+  useEffect(() => {
+    if (session?.user?.status) {
+      setUserStatus(session.user.status);
+    }
+  }, [session]);
+
+  const handleSubscribe = async (priceId: string) => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId,
+          successUrl: `${window.location.origin}/upgrade?success=true`,
+          cancelUrl: `${window.location.origin}/upgrade?canceled=true`,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        console.error("No URL returned");
+      }
+    } catch (error) {
+      console.error("Subscription error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch("/api/stripe/create-portal", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error("Portal error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <motion.div
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-8 max-w-6xl mx-auto"
+      className="space-y-8 max-w-7xl mx-auto"
     >
       {/* Page Header */}
       <motion.div variants={itemVariants} className="text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 px-4 py-1.5 mb-4">
           <Zap className="h-4 w-4 text-indigo-600" />
-          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">Upgrade Your Experience</span>
+          <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+            Simple, Transparent Pricing
+          </span>
         </div>
         <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
           Choose Your Plan
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
           Unlock powerful features and take your productivity to the next level.
+          Start with a 14-day free trial, no commitment required.
         </p>
       </motion.div>
 
       {/* Pricing Cards */}
-      <div className="grid gap-6 lg:grid-cols-2 lg:gap-8">
-        {/* Free Plan */}
-        <motion.div variants={itemVariants}>
-          <Card className="relative h-full border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-2">
-                  <Zap className="h-5 w-5 text-slate-600 dark:text-slate-400" />
-                </div>
-                Free Plan
-              </CardTitle>
-              <CardDescription className="text-base">
-                Perfect for getting started
-              </CardDescription>
-              <div className="mt-6">
-                <span className="text-5xl font-bold">$0</span>
-                <span className="text-muted-foreground ml-2">/month</span>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ul className="space-y-3">
-                {freeFeatures.map((feature) => (
-                  <li key={feature.text} className="flex items-center gap-3">
-                    <feature.icon className="h-5 w-5 text-emerald-500 shrink-0" />
-                    <span className="text-sm">{feature.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline" className="w-full h-11" disabled>
-                Current Plan
-              </Button>
-            </CardFooter>
-          </Card>
-        </motion.div>
-
-        {/* Premium Plan */}
-        <motion.div variants={itemVariants}>
-          <Card className="relative h-full border-0 shadow-xl overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" />
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10">
-              <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0 px-4 py-1.5">
-                <Crown className="h-3 w-3 mr-1" />
-                Most Popular
-              </Badge>
-            </div>
-            <CardHeader className="pb-4 pt-8">
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <div className="rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-2">
-                  <Crown className="h-5 w-5 text-white" />
-                </div>
-                Premium Plan
-              </CardTitle>
-              <CardDescription className="text-base">
-                Unlock full potential with advanced features
-              </CardDescription>
-              <div className="mt-6">
-                <span className="text-5xl font-bold">$12</span>
-                <span className="text-muted-foreground ml-2">/month</span>
-                <div className="text-sm text-emerald-600 mt-1">Save 20% with annual billing</div>
-              </div>
-            </CardHeader>
-            <CardContent className="flex-1">
-              <ul className="grid grid-cols-1 gap-3">
-                {premiumFeatures.map((feature) => (
-                  <li key={feature.text} className="flex items-center gap-3">
-                    <div className={`rounded-full p-0.5 ${feature.highlight ? "bg-gradient-to-r from-indigo-500 to-purple-500" : "bg-slate-200 dark:bg-slate-700"}`}>
-                      <feature.icon className={`h-4 w-4 ${feature.highlight ? "text-white" : "text-muted-foreground"}`} />
-                    </div>
-                    <span className={`text-sm ${feature.highlight ? "font-medium" : "text-muted-foreground"}`}>
-                      {feature.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            <CardFooter>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="w-full">
-                <Button className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Upgrade to Premium
-                </Button>
-              </motion.div>
-            </CardFooter>
-          </Card>
-        </motion.div>
+      <div className="grid gap-6 lg:grid-cols-2 lg:gap-8 max-w-4xl mx-auto">
+        <PricingCard
+          name="Free"
+          price={0}
+          description="Perfect for getting started"
+          features={freeFeatures}
+          currentPlan={userStatus}
+        />
+        
+        <PricingCard
+          name="Premium"
+          price={12}
+          description="Unlock full potential"
+          features={premiumFeatures}
+          priceId={process.env.NEXT_PUBLIC_STRIPE_PREMIUM_PRICE_ID}
+          isPopular={true}
+          currentPlan={userStatus}
+          onSubscribe={handleSubscribe}
+          onManageSubscription={handleManageSubscription}
+        />
       </div>
+
+      {/* Trust Badges */}
+      <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-6 pt-8">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Lock className="h-4 w-4 text-emerald-500" />
+          Secure SSL Encryption
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CreditCard className="h-4 w-4 text-emerald-500" />
+          Stripe Secure Payments
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Shield className="h-4 w-4 text-emerald-500" />
+          30-Day Money Back Guarantee
+        </div>
+      </motion.div>
 
       {/* Features Comparison */}
       <motion.div variants={itemVariants} className="pt-8">
@@ -169,31 +211,31 @@ export default function UpgradePage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="border-0 shadow-md text-center p-6">
             <div className="rounded-full bg-indigo-100 dark:bg-indigo-950 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-3">
-              <Infinity className="h-6 w-6 text-indigo-600" />
+              <Sparkles className="h-6 w-6 text-indigo-600" />
             </div>
-            <h3 className="font-semibold">Unlimited Everything</h3>
-            <p className="text-sm text-muted-foreground mt-1">No limits on tasks, projects, or categories</p>
+            <h3 className="font-semibold">Unlimited Tasks</h3>
+            <p className="text-sm text-muted-foreground mt-1">No limits on tasks or projects</p>
           </Card>
           <Card className="border-0 shadow-md text-center p-6">
             <div className="rounded-full bg-purple-100 dark:bg-purple-950 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-3">
-              <BarChart className="h-6 w-6 text-purple-600" />
+              <TrendingUp className="h-6 w-6 text-purple-600" />
             </div>
             <h3 className="font-semibold">Advanced Analytics</h3>
-            <p className="text-sm text-muted-foreground mt-1">Deep insights into your productivity</p>
+            <p className="text-sm text-muted-foreground mt-1">Deep insights into productivity</p>
           </Card>
           <Card className="border-0 shadow-md text-center p-6">
             <div className="rounded-full bg-emerald-100 dark:bg-emerald-950 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-3">
               <Users className="h-6 w-6 text-emerald-600" />
             </div>
             <h3 className="font-semibold">Team Collaboration</h3>
-            <p className="text-sm text-muted-foreground mt-1">Work together seamlessly with your team</p>
+            <p className="text-sm text-muted-foreground mt-1">Work together seamlessly</p>
           </Card>
           <Card className="border-0 shadow-md text-center p-6">
             <div className="rounded-full bg-amber-100 dark:bg-amber-950 p-3 w-12 h-12 flex items-center justify-center mx-auto mb-3">
               <Headphones className="h-6 w-6 text-amber-600" />
             </div>
-            <h3 className="font-semibold">Priority Support</h3>
-            <p className="text-sm text-muted-foreground mt-1">Get help when you need it, fast</p>
+            <h3 className="font-semibold">24/7 Priority Support</h3>
+            <p className="text-sm text-muted-foreground mt-1">Get help when you need it</p>
           </Card>
         </div>
       </motion.div>
@@ -201,41 +243,20 @@ export default function UpgradePage() {
       {/* FAQ Section */}
       <motion.div variants={itemVariants} className="pt-8 border-t">
         <h2 className="text-2xl font-semibold text-center mb-6">Frequently Asked Questions</h2>
-        <div className="grid gap-4 md:grid-cols-2 max-w-3xl mx-auto">
-          <Card className="border-0 shadow-md">
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Can I cancel anytime?</h3>
-              <p className="text-sm text-muted-foreground">
-                Yes, you can cancel your premium subscription at any time. Your access will continue until the end of your billing period.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-md">
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
-              <p className="text-sm text-muted-foreground">
-                We offer a 14-day free trial for new premium users. No credit card required to start.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-md">
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
-              <p className="text-sm text-muted-foreground">
-                We accept all major credit cards, PayPal, and bank transfers for annual plans.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-md">
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Can I switch plans later?</h3>
-              <p className="text-sm text-muted-foreground">
-                Absolutely! You can upgrade or downgrade your plan at any time.
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid gap-4 md:grid-cols-2 max-w-4xl mx-auto">
+          {faqs.map((faq, index) => (
+            <Card key={index} className="border-0 shadow-md">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">{faq.question}</h3>
+                <p className="text-sm text-muted-foreground">{faq.answer}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </motion.div>
     </motion.div>
-  )
+  );
 }
+
+// Import missing icons
+import { Users, TrendingUp, Headphones } from "lucide-react";
