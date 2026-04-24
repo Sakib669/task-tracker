@@ -161,7 +161,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [isAddModalOpen]);
 
   // Delete task
   const handleDeleteTask = async () => {

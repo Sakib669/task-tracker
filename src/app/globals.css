@@ -75,16 +75,20 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
   }
+  
   .theme {
     --font-heading: var(--font-sans);
     --font-sans: var(--font-sans);
   }
+  
   * {
     @apply border-border outline-ring/50;
   }
+  
   body {
     @apply bg-background text-foreground;
   }
+  
   html {
     @apply font-sans;
   }
@@ -94,7 +98,142 @@
   * {
     @apply border-border;
   }
+  
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ===== FIX DIALOG TRANSPARENCY ISSUES ===== */
+
+/* Force solid background on dialogs */
+[data-radix-dialog-content],
+div[role="dialog"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Dialog overlay - make it darker for better contrast */
+.fixed.inset-0.z-50.bg-black\/50,
+[data-radix-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* Ensure dialog content has solid background in both themes */
+.dark [data-radix-dialog-content],
+.dark div[role="dialog"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+}
+
+/* For the DialogContent component specifically */
+div[data-radix-dialog-content] {
+  background-color: hsl(var(--background));
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+              0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Fix dropdown menus */
+[data-radix-select-content],
+[data-radix-dropdown-menu-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Fix popover content */
+[data-radix-popover-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Make alerts and dialogs have solid backgrounds */
+.alert-dialog-content,
+[role="alertdialog"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Ensure card backgrounds are solid */
+.card,
+[data-radix-card] {
+  background-color: hsl(var(--card));
+}
+
+/* For the specific AddTaskModal dialog */
+.sm\:max-w-\[550px\] {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Fix select dropdown backgrounds */
+select option {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Fix any remaining transparency issues */
+[data-radix-tooltip-content],
+[data-radix-hover-card-content] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Ensure modal content has proper contrast */
+.ReactModal__Content,
+.modal-content {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Fix any dialog header transparency */
+.dialog-header,
+[data-radix-dialog-header] {
+  background-color: transparent;
+}
+
+/* Ensure form elements inside dialogs are readable */
+.dialog-content input,
+.dialog-content textarea,
+.dialog-content select {
+  background-color: hsl(var(--background));
+  border-color: hsl(var(--border));
+}
+
+/* Fix any remaining overlay issues */
+.overlay,
+[data-radix-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(2px);
+}
+
+
+/* Force solid background on alert dialogs */
+[data-radix-alert-dialog-content],
+div[role="alertdialog"] {
+  background-color: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Specific fix for AlertDialogContent */
+.alert-dialog-content {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Fix the overlay behind alert dialog */
+[data-radix-alert-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(3px);
+}
+
+/* For the cancel and delete buttons container */
+.alert-dialog-footer {
+  background-color: transparent;
+}
+
+/* Ensure the alert dialog title and description are visible */
+[data-radix-alert-dialog-title] {
+  color: hsl(var(--foreground));
+}
+
+[data-radix-alert-dialog-description] {
+  color: hsl(var(--muted-foreground));
 }
