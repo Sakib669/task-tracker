@@ -6,6 +6,7 @@ import { Check, Zap, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { stripe } from "@/lib/stripe-server";
 
 interface PricingCardProps {
   name: string;
@@ -19,7 +20,7 @@ interface PricingCardProps {
   onManageSubscription?: () => void;
 }
 
-export function PricingCard({
+export async function PricingCard({
   name,
   price,
   description,
@@ -42,6 +43,16 @@ export function PricingCard({
       setIsLoading(false);
     }
   };
+
+  // Create PaymentIntent as soon as the page loads
+  const { client_secret: clientSecret } = await stripe.paymentIntents.create({
+    amount: 12,
+    currency: 'usd',
+    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  })
 
   return (
     <motion.div
