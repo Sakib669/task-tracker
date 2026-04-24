@@ -16,30 +16,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/tasks/page.js"
     ],
-    "/api/posts/route": [
+    "/(auth)/sign-in/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/posts/route.js"
+      "static/chunks/app/(auth)/sign-in/page.js"
     ],
     "/api/auth/[...nextauth]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/api/auth/[...nextauth]/route.js"
     ],
-    "/(dashboard)/categories/page": [
+    "/api/posts/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/categories/page.js"
-    ],
-    "/(dashboard)/dashboard/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/dashboard/page.js"
-    ],
-    "/api/posts/[id]/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/posts/[id]/route.js"
+      "static/chunks/app/api/posts/route.js"
     ]
   }
 }

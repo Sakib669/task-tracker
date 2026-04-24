@@ -88,13 +88,15 @@ model Authenticator {
 }
 
 model Task {
-  id          String  @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
-  isCompleted Boolean @default(false)
+  isCompleted Boolean   @default(false)
+  category    String?
+  dueDate     DateTime?
+  status      String    @default("pending")
   userId      String
-  category    String
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -109,4 +111,3 @@ enum UserRole {
   USER
   ADMIN
 }
-
