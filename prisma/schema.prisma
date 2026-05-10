@@ -13,20 +13,21 @@ datasource db {
 }
 
 model User {
-  id               String          @id @default(cuid())
-  name             String?
-  email            String          @unique
-  emailVerified    DateTime?
-  image            String?
-  password         String?
-  accounts         Account[]
-  sessions         Session[]
-  role             UserRole        @default(USER)
-  status           UserStatus      @default(FREE)
-  stripeCustomerId String?         @unique
-  tasks            Task[]
+  id                   String          @id @default(cuid())
+  name                 String?
+  email                String          @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  accounts             Account[]
+  sessions             Session[]
+  role                 UserRole        @default(USER)
+  status               UserStatus      @default(FREE)
+  stripeCustomerId     String?         
+  tasks                Task[]
+  stripeSubscriptionId String?         
   // Optional for WebAuthn support
-  Authenticator    Authenticator[]
+  Authenticator        Authenticator[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
