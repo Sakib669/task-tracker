@@ -23,26 +23,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSession, signOut } from "next-auth/react";
 
 const navItems = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "My Tasks",
-    href: "/tasks",
-    icon: CheckSquare,
-  },
-  {
-    title: "Kanban Board",
-    href: "/kanban",
-    icon: Columns3,
-  },
-  {
-    title: "Categories",
-    href: "/categories",
-    icon: Tags,
-  },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { title: "My Tasks", href: "/tasks", icon: CheckSquare },
+  { title: "Kanban Board", href: "/kanban", icon: Columns3 },
+  { title: "Categories", href: "/categories", icon: Tags },
 ];
 
 export function Sidebar() {
@@ -50,6 +34,7 @@ export function Sidebar() {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
   const { data: session } = useSession();
+  const isPremium = session?.user?.status === "PREMIUM";
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);
@@ -68,7 +53,6 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
       <Button
         variant="ghost"
         size="icon"
@@ -78,7 +62,6 @@ export function Sidebar() {
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
-      {/* Overlay */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
@@ -92,12 +75,9 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <motion.aside
         initial={false}
-        animate={{
-          x: isOpen || !isMobile ? 0 : -280,
-        }}
+        animate={{ x: isOpen || !isMobile ? 0 : -280 }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
         className={cn(
           "fixed left-0 top-0 z-40 h-screen w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-2xl transition-all",
@@ -106,7 +86,6 @@ export function Sidebar() {
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo Area */}
           <div className="flex h-20 items-center border-b border-white/10 px-6">
             <Link href="/dashboard" className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
@@ -118,7 +97,6 @@ export function Sidebar() {
             </Link>
           </div>
 
-          {/* User Profile Card */}
           <div className="mx-4 mt-6 rounded-xl bg-white/5 p-4 backdrop-blur">
             <div className="flex items-center gap-3">
               <Avatar className="h-12 w-12 border-2 border-white/20">
@@ -138,7 +116,6 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-6">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
@@ -171,37 +148,73 @@ export function Sidebar() {
                 </Link>
               );
             })}
+
+            {/* Separator */}
+            <div className="my-3 border-t border-white/10" />
+
+            {/* Profile & Settings */}
+            <Link
+              href="/profile"
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                pathname === "/profile"
+                  ? "bg-white/10 text-white"
+                  : "text-white/70 hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <User className="h-5 w-5" />
+              Profile
+            </Link>
+            <Link
+              href="/settings"
+              onClick={() => setIsOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                pathname === "/settings"
+                  ? "bg-white/10 text-white"
+                  : "text-white/70 hover:bg-white/5 hover:text-white",
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              Settings
+            </Link>
           </nav>
 
-          {/* Premium Card */}
           <div className="border-t border-white/10 p-4">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 p-4 shadow-lg"
-            >
-              <div className="absolute right-0 top-0 -mr-4 -mt-4 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
-              <div className="relative flex items-start gap-3">
-                <div className="rounded-lg bg-white/20 p-2">
-                  <Crown className="h-5 w-5 text-yellow-400" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">Premium Access</p>
-                  <p className="text-xs text-white/80 mt-0.5">
-                    Get unlimited tasks & features
-                  </p>
-                  <Button
-                    size="sm"
-                    className="mt-3 h-8 w-full bg-white text-indigo-600 hover:bg-white/90 hover:text-indigo-700"
-                    asChild
-                  >
-                    <Link href="/upgrade">Upgrade Now</Link>
-                  </Button>
-                </div>
+            {isPremium ? (
+              <div className="rounded-xl bg-gradient-to-br from-indigo-600/30 to-purple-700/30 p-4 text-center">
+                <Crown className="h-5 w-5 text-yellow-400 mx-auto mb-1" />
+                <p className="text-sm font-medium">Premium Member</p>
               </div>
-            </motion.div>
+            ) : (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-purple-700 p-4 shadow-lg"
+              >
+                <div className="absolute right-0 top-0 -mr-4 -mt-4 h-20 w-20 rounded-full bg-white/10 blur-2xl" />
+                <div className="relative flex items-start gap-3">
+                  <div className="rounded-lg bg-white/20 p-2">
+                    <Crown className="h-5 w-5 text-yellow-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">Premium Access</p>
+                    <p className="text-xs text-white/80 mt-0.5">
+                      Get unlimited tasks & features
+                    </p>
+                    <Button
+                      size="sm"
+                      className="mt-3 h-8 w-full bg-white text-indigo-600 hover:bg-white/90 hover:text-indigo-700"
+                      asChild
+                    >
+                      <Link href="/upgrade">Upgrade Now</Link>
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
 
-            {/* Sign Out Button */}
             <Button
               variant="ghost"
               className="mt-4 w-full justify-start gap-3 text-white/70 hover:bg-white/10 hover:text-white"
