@@ -13,6 +13,7 @@ import {
   FileText,
   Inbox,
   Sparkles,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,7 @@ import {
 import { toast } from "sonner";
 import { TaskActions } from "@/components/tasks/TaskActions";
 import { EditTaskDialog } from "@/components/tasks/EditTaskDialog";
+import { TaskChart } from "@/components/dashboard/TaskChart";
 
 interface Task {
   id: string;
@@ -98,11 +100,15 @@ function StatCard({
   return (
     <motion.div variants={itemVariants}>
       <Card className="overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`} />
+        <div
+          className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-5`}
+        />
         <CardContent className="relative p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                {title}
+              </p>
               <p className="mt-2 text-3xl font-bold tracking-tight">{value}</p>
               {trend && (
                 <p className="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
@@ -110,7 +116,9 @@ function StatCard({
                 </p>
               )}
             </div>
-            <div className={`rounded-2xl bg-gradient-to-br ${gradient} p-3 shadow-lg`}>
+            <div
+              className={`rounded-2xl bg-gradient-to-br ${gradient} p-3 shadow-lg`}
+            >
               <Icon className="h-6 w-6 text-white" />
             </div>
           </div>
@@ -143,7 +151,8 @@ function TaskCard({
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && !task.isCompleted;
+  const isOverdue =
+    task.dueDate && new Date(task.dueDate) < new Date() && !task.isCompleted;
 
   return (
     <motion.div
@@ -156,7 +165,9 @@ function TaskCard({
           <div className="flex items-start gap-4">
             <Checkbox
               checked={task.isCompleted}
-              onCheckedChange={(checked) => onToggle(task.id, checked as boolean)}
+              onCheckedChange={(checked) =>
+                onToggle(task.id, checked as boolean)
+              }
               className="mt-1 h-5 w-5 border-2 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
             />
             <div className="flex-1 min-w-0">
@@ -201,8 +212,8 @@ function TaskCard({
                     task.isCompleted
                       ? "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300"
                       : task.status === "in-progress"
-                      ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
-                      : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                        ? "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300"
+                        : "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300"
                   }`}
                 >
                   {task.isCompleted ? (
@@ -253,13 +264,17 @@ function TaskCardSkeleton() {
 
 function EmptyState({ onCreateTask }: { onCreateTask: () => void }) {
   return (
-    <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16">
+    <motion.div
+      variants={itemVariants}
+      className="flex flex-col items-center justify-center py-16"
+    >
       <div className="rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 p-6 mb-4">
         <Inbox className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
       </div>
       <h3 className="text-xl font-semibold mb-2">No tasks yet</h3>
       <p className="text-muted-foreground text-center max-w-sm mb-6">
-        Create your first task to get started and organize your work efficiently.
+        Create your first task to get started and organize your work
+        efficiently.
       </p>
       <Button
         onClick={onCreateTask}
@@ -312,7 +327,6 @@ export default function DashboardPage() {
   }, [fetchTasks]);
 
   const handleToggleTask = async (id: string, completed: boolean) => {
-    // Optimistic update
     const updatedTasks = tasks.map((task) =>
       task.id === id
         ? {
@@ -320,7 +334,7 @@ export default function DashboardPage() {
             isCompleted: completed,
             status: completed ? "completed" : "pending",
           }
-        : task
+        : task,
     );
     setTasks(updatedTasks);
 
@@ -334,7 +348,6 @@ export default function DashboardPage() {
         }),
       });
     } catch (error) {
-      // Revert on error
       fetchTasks();
       console.error("Error toggling task:", error);
     }
@@ -392,18 +405,29 @@ export default function DashboardPage() {
     pending: tasks.filter((t) => !t.isCompleted).length,
   };
 
-  const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+  const completionRate =
+    stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
   return (
     <>
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="space-y-8">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="space-y-8"
+      >
         {/* Welcome Section */}
-        <motion.div variants={itemVariants} className="flex items-center justify-between flex-wrap gap-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center justify-between flex-wrap gap-4"
+        >
           <div>
             <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
               Dashboard
             </h1>
-            <p className="text-muted-foreground mt-1">Welcome back! Here's your productivity overview.</p>
+            <p className="text-muted-foreground mt-1">
+              Welcome back! Here's your productivity overview.
+            </p>
           </div>
         </motion.div>
 
@@ -430,6 +454,17 @@ export default function DashboardPage() {
             gradient="from-amber-500 to-orange-500"
           />
         </div>
+
+        {/* Charts Section - NEW */}
+        {!loading && tasks.length > 0 && (
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center gap-2 mb-4">
+              <BarChart3 className="h-5 w-5 text-indigo-600" />
+              <h2 className="text-xl font-semibold">Analytics</h2>
+            </div>
+            <TaskChart tasks={tasks} />
+          </motion.div>
+        )}
 
         {/* Tasks Section */}
         <motion.div variants={itemVariants}>
@@ -483,8 +518,12 @@ export default function DashboardPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">Create New Task</DialogTitle>
-            <DialogDescription>Fill in the details below to add a new task to your workspace.</DialogDescription>
+            <DialogTitle className="text-2xl font-bold">
+              Create New Task
+            </DialogTitle>
+            <DialogDescription>
+              Fill in the details below to add a new task to your workspace.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateTask} className="space-y-5 mt-4">
             <div className="space-y-2">
@@ -555,7 +594,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button
