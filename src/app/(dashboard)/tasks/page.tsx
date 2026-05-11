@@ -365,10 +365,198 @@ export default function TasksPage() {
           Showing {displayedTasks.length} of {filteredTasks.length} tasks
         </motion.div>
 
-        {/* List / Grid rendering same as before, just uses local Task type */}
-        {/* ... (identical to original, using mapped tasks) ... */}
-        {/* I'll keep it concise, assuming the original list/grid code is present */}
-        {/* ... (full JSX omitted for brevity – you already have the complete component) */}
+        {/* Tasks List */}
+        {viewMode === "list" ? (
+          <motion.div variants={itemVariants} className="space-y-3">
+            <AnimatePresence>
+              {displayedTasks.map((task) => (
+                <motion.div
+                  key={task.id}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, x: -20 }}
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="border-0 shadow-md hover:shadow-lg transition-all duration-300 group">
+                    <CardContent className="flex items-center gap-4 p-5">
+                      <Checkbox
+                        checked={task.status === "completed"}
+                        onCheckedChange={() =>
+                          handleToggleComplete(task.id, task.status)
+                        }
+                        className="h-5 w-5 border-2 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p
+                            className={`font-semibold truncate ${
+                              task.status === "completed"
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {task.title}
+                          </p>
+                          <Badge
+                            className={`text-xs ${getStatusBadgeVariant(task.status)}`}
+                            onClick={() =>
+                              handleStatusCycle(task.id, task.status)
+                            }
+                          >
+                            {getStatusIcon(task.status)}
+                            {getStatusLabel(task.status)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate mt-1">
+                          {task.description}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className="shrink-0 gap-1">
+                        <Tag className="h-3 w-3" />
+                        {task.category}
+                      </Badge>
+                      <span className="text-sm text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {task.dueDate
+                          ? new Date(task.dueDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : "No date"}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                        onClick={() => setDeleteTaskId(task.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
+            <AnimatePresence>
+              {displayedTasks.map((task) => (
+                <motion.div
+                  key={task.id}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Card className="h-full border-0 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2 flex-1">
+                          <Checkbox
+                            checked={task.status === "completed"}
+                            onCheckedChange={() =>
+                              handleToggleComplete(task.id, task.status)
+                            }
+                            className="mt-0.5 h-4 w-4 border-2 data-[state=checked]:bg-emerald-600"
+                          />
+                          <p
+                            className={`font-semibold line-clamp-2 flex-1 ${
+                              task.status === "completed"
+                                ? "line-through text-muted-foreground"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {task.title}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 text-red-500 hover:text-red-600"
+                          onClick={() => setDeleteTaskId(task.id)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {task.description}
+                      </p>
+                      <div className="flex items-center justify-between pt-2">
+                        <Badge variant="outline" className="gap-1">
+                          <Tag className="h-3 w-3" />
+                          {task.category}
+                        </Badge>
+                        <Badge
+                          className={`text-xs ${getStatusBadgeVariant(task.status)}`}
+                          onClick={() =>
+                            handleStatusCycle(task.id, task.status)
+                          }
+                        >
+                          {getStatusLabel(task.status)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {task.dueDate
+                            ? new Date(task.dueDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
+                            : "No date"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* Load More Button */}
+        {displayedTasks.length < filteredTasks.length && (
+          <motion.div
+            variants={itemVariants}
+            className="flex justify-center pt-4"
+          >
+            <Button
+              variant="outline"
+              onClick={() => setVisibleTasks((prev) => prev + 8)}
+              className="gap-2 h-11 px-6"
+            >
+              Load More <ChevronDown className="h-4 w-4" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Empty State */}
+        {filteredTasks.length === 0 && (
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col items-center justify-center py-16 text-center"
+          >
+            <div className="rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950 dark:to-purple-950 p-6 mb-4">
+              <Search className="h-10 w-10 text-indigo-600 dark:text-indigo-400" />
+            </div>
+            <h3 className="text-xl font-semibold mt-2">No tasks found</h3>
+            <p className="text-muted-foreground max-w-sm mt-2">
+              Try adjusting your filters or search terms to find what you're
+              looking for.
+            </p>
+          </motion.div>
+        )}
       </motion.div>
 
       <AlertDialog
