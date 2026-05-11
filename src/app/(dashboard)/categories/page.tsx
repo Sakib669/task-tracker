@@ -4,8 +4,18 @@ import { motion } from "framer-motion"
 import { Tag, Trash2, Edit, Plus, TrendingUp, CheckCircle2, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { categories, Task } from "@/lib/mock-data"
 import { useEffect, useState } from "react"
+
+const categories = [ "Design", "Development", "Marketing", "Sales", "Support", "Management" ];
+
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  status: string;
+  dueDate: string | null;
+}
 
 const containerVariants = {
   hidden: { opacity: 0 },

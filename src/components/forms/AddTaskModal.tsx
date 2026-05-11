@@ -13,12 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { categories } from "@/lib/mock-data"
 import { useSession } from "next-auth/react"
 
 interface AddTaskModalProps {
   onClose: () => void
 }
+
+const categories = [
+  "Design",
+  "Development",
+  "Marketing",
+  "Sales",
+  "Support",
+  "Management",
+];
 
 export function AddTaskModal({ onClose }: AddTaskModalProps) {
   const [title, setTitle] = useState("")
