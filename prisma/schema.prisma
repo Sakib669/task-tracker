@@ -23,8 +23,8 @@ model User {
   sessions             Session[]
   role                 UserRole        @default(USER)
   status               UserStatus      @default(FREE)
-  stripeCustomerId     String?         
   tasks                Task[]
+  stripeCustomerId     String?         
   stripeSubscriptionId String?         
   // Optional for WebAuthn support
   Authenticator        Authenticator[]
