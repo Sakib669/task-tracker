@@ -49,9 +49,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { categories, Task } from "@/lib/mock-data";
 import { AddTaskModal } from "@/components/forms/AddTaskModal";
 import { AITaskGenerator } from "@/components/tasks/AITaskGenerator";
+import { Task } from "@/lib/mock-data";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -73,6 +73,15 @@ const itemVariants = {
     },
   },
 };
+
+const categories = [
+  "Design",
+  "Development",
+  "Marketing",
+  "Sales",
+  "Support",
+  "Management",
+];
 
 function getStatusBadgeVariant(status: Task["status"]) {
   switch (status) {
@@ -137,7 +146,7 @@ export default function TasksPage() {
   const [visibleTasks, setVisibleTasks] = useState(8);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Delete confirmation state
   const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -163,13 +172,13 @@ export default function TasksPage() {
   // Delete task
   const handleDeleteTask = async () => {
     if (!deleteTaskId) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`/api/posts/${deleteTaskId}`, {
         method: "DELETE",
       });
-      
+
       if (response.ok) {
         setTasks((prev) => prev.filter((task) => task.id !== deleteTaskId));
       }
@@ -182,16 +191,19 @@ export default function TasksPage() {
   };
 
   // Update task status using checkbox (complete/incomplete)
-  const handleToggleComplete = async (taskId: string, currentStatus: Task["status"]) => {
+  const handleToggleComplete = async (
+    taskId: string,
+    currentStatus: Task["status"],
+  ) => {
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
-    
+
     // Optimistic update
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
+        task.id === taskId ? { ...task, status: newStatus } : task,
+      ),
     );
-    
+
     try {
       await fetch(`/api/posts/${taskId}`, {
         method: "PATCH",
@@ -206,16 +218,19 @@ export default function TasksPage() {
   };
 
   // Update task status via badge click (cycle through statuses)
-  const handleStatusCycle = async (taskId: string, currentStatus: Task["status"]) => {
+  const handleStatusCycle = async (
+    taskId: string,
+    currentStatus: Task["status"],
+  ) => {
     const newStatus = getNextStatus(currentStatus);
-    
+
     // Optimistic update
     setTasks((prev) =>
       prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
+        task.id === taskId ? { ...task, status: newStatus } : task,
+      ),
     );
-    
+
     try {
       await fetch(`/api/posts/${taskId}`, {
         method: "PATCH",
@@ -277,7 +292,7 @@ export default function TasksPage() {
               Manage and track all your tasks in one place.
             </p>
           </div>
-          
+
           {/* Buttons Group */}
           <div className="flex gap-2">
             {/* AI Generate Button */}
@@ -411,10 +426,12 @@ export default function TasksPage() {
                       {/* Checkbox for complete/incomplete */}
                       <Checkbox
                         checked={task.status === "completed"}
-                        onCheckedChange={() => handleToggleComplete(task.id, task.status)}
+                        onCheckedChange={() =>
+                          handleToggleComplete(task.id, task.status)
+                        }
                         className="h-5 w-5 border-2 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                       />
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p
@@ -429,7 +446,9 @@ export default function TasksPage() {
                           {/* Clickable status badge */}
                           <Badge
                             className={`text-xs ${getStatusBadgeVariant(task.status)}`}
-                            onClick={() => handleStatusCycle(task.id, task.status)}
+                            onClick={() =>
+                              handleStatusCycle(task.id, task.status)
+                            }
                           >
                             {getStatusIcon(task.status)}
                             {getStatusLabel(task.status)}
@@ -439,12 +458,12 @@ export default function TasksPage() {
                           {task.description}
                         </p>
                       </div>
-                      
+
                       <Badge variant="outline" className="shrink-0 gap-1">
                         <Tag className="h-3 w-3" />
                         {task.category}
                       </Badge>
-                      
+
                       <span className="text-sm text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {new Date(task.dueDate).toLocaleDateString("en-US", {
@@ -452,7 +471,7 @@ export default function TasksPage() {
                           day: "numeric",
                         })}
                       </span>
-                      
+
                       {/* Delete button */}
                       <Button
                         variant="ghost"
@@ -490,7 +509,9 @@ export default function TasksPage() {
                         <div className="flex items-start gap-2 flex-1">
                           <Checkbox
                             checked={task.status === "completed"}
-                            onCheckedChange={() => handleToggleComplete(task.id, task.status)}
+                            onCheckedChange={() =>
+                              handleToggleComplete(task.id, task.status)
+                            }
                             className="mt-0.5 h-4 w-4 border-2 data-[state=checked]:bg-emerald-600"
                           />
                           <p
@@ -512,11 +533,11 @@ export default function TasksPage() {
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </div>
-                      
+
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {task.description}
                       </p>
-                      
+
                       <div className="flex items-center justify-between pt-2">
                         <Badge variant="outline" className="gap-1">
                           <Tag className="h-3 w-3" />
@@ -524,12 +545,14 @@ export default function TasksPage() {
                         </Badge>
                         <Badge
                           className={`text-xs ${getStatusBadgeVariant(task.status)}`}
-                          onClick={() => handleStatusCycle(task.id, task.status)}
+                          onClick={() =>
+                            handleStatusCycle(task.id, task.status)
+                          }
                         >
                           {getStatusLabel(task.status)}
                         </Badge>
                       </div>
-                      
+
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -583,12 +606,16 @@ export default function TasksPage() {
       </motion.div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteTaskId} onOpenChange={() => setDeleteTaskId(null)}>
+      <AlertDialog
+        open={!!deleteTaskId}
+        onOpenChange={() => setDeleteTaskId(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This task will be permanently deleted.
+              This action cannot be undone. This task will be permanently
+              deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

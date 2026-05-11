@@ -1,149 +1,33 @@
-# TaskFlow - SaaS Task Management Application
+# TaskFlow - AI-Powered SaaS Task Management
 
-A modern, professional, and responsive frontend UI for a SaaS Task Management Web App built with Next.js 15, TypeScript, Tailwind CSS, and Shadcn/UI.
+A full-stack SaaS task management application with AI integration, Kanban board, Stripe payments, and analytics.
 
-## Features
+## 🚀 Tech Stack
 
-- **Dashboard**: Overview of tasks with animated stat cards and recent tasks table
-- **My Tasks**: Full task management with filtering, search, and grid/list views
-- **Categories**: Organize tasks by categories with progress tracking
-- **Settings**: User preferences for profile, notifications, security, and appearance
-- **Upgrade Page**: Pricing comparison between Free and Premium plans
+- **Framework:** Next.js 15 (App Router, TypeScript)
+- **Database:** PostgreSQL with Prisma ORM
+- **Auth:** NextAuth v5 (Credentials + OAuth)
+- **Payments:** Stripe subscriptions with webhooks
+- **UI:** Tailwind CSS + Shadcn/UI + Radix UI
+- **Charts:** Chart.js
+- **Drag & Drop:** dnd-kit
+- **AI:** Google Gemini / Groq
 
-## Technical Stack
+## ✨ Features
 
-- **Framework**: Next.js 15 (App Router, TypeScript)
-- **Styling**: Tailwind CSS + Shadcn/UI
-- **Icons**: Lucide React
-- **Animation**: Framer Motion
-- **Components**: Radix UI primitives
+- 📊 Dashboard with analytics charts
+- 📋 Task management with list/grid views
+- 🎯 Kanban board with drag & drop
+- 🤖 AI task generator
+- 💳 Stripe subscription billing
+- 👤 User profile & settings
+- 🌙 Dark mode support
+- 📱 Responsive design
 
-## Getting Started
+## 🛠️ Installation
 
-### Prerequisites
-
-- Node.js 18+ 
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd task-tracker
-```
-
-2. Install dependencies:
 ```bash
 npm install
-```
-
-3. Run the development server:
-```bash
+cp .env.example .env
+npx prisma migrate dev
 npm run dev
-```
-
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── (dashboard)/
-│   │   ├── categories/
-│   │   ├── dashboard/
-│   │   ├── settings/
-│   │   ├── tasks/
-│   │   ├── upgrade/
-│   │   └── layout.tsx
-│   ├── globals.css
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/
-│   ├── forms/
-│   │   └── AddTaskModal.tsx
-│   ├── shared/
-│   │   ├── DashboardLayout.tsx
-│   │   ├── Navbar.tsx
-│   │   └── Sidebar.tsx
-│   └── ui/
-│       ├── avatar.tsx
-│       ├── badge.tsx
-│       ├── button.tsx
-│       ├── card.tsx
-│       ├── checkbox.tsx
-│       ├── dialog.tsx
-│       ├── input.tsx
-│       ├── label.tsx
-│       └── select.tsx
-└── lib/
-    ├── mock-data.ts
-    └── utils.ts
-```
-
-## Pages
-
-### Dashboard
-- Stat cards with animated count-up effect
-- Recent tasks table with hover animations
-- Free plan usage indicator
-
-### My Tasks
-- Search and filter by status/category
-- Grid and list view toggle
-- Load more pagination
-- Add task modal
-
-### Categories
-- Category cards with task statistics
-- Progress bars for completion tracking
-- Edit and delete actions
-
-### Settings
-- Profile management
-- Notification preferences
-- Security settings
-- Appearance customization
-
-### Upgrade
-- Free vs Premium pricing comparison
-- Feature comparison lists
-- FAQ section
-
-## Design System
-
-### Color Palette
-- Primary: Indigo-600 (#4F46E5)
-- Background: White/Slate-50
-- Accent: Purple-600
-- Neutral: Slate/Zinc tones
-
-### Typography
-- Primary Font: Inter (sans-serif)
-- Headings: Bold, tracking-tight
-- Body: Regular weight, relaxed leading
-
-### Animations
-- Fade-in on page load
-- Staggered children animations
-- Hover scale effects
-- Smooth transitions
-
-## Responsive Design
-
-- Mobile-first approach
-- Collapsible sidebar with hamburger menu
-- Stacking cards and grids on smaller screens
-- Touch-friendly interactions
-
-## Mock Data
-
-The application uses mock data for demonstration purposes:
-- 12 sample tasks across 6 categories
-- User profile information
-- Category statistics
-
-## License
-
-MIT
