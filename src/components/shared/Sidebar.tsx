@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   CheckSquare,
@@ -15,11 +15,12 @@ import {
   LogOut,
   User,
   Crown,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useSession, signOut } from "next-auth/react"
+  Columns3,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useSession, signOut } from "next-auth/react";
 
 const navItems = [
   {
@@ -33,32 +34,37 @@ const navItems = [
     icon: CheckSquare,
   },
   {
+    title: "Kanban Board",
+    href: "/kanban",
+    icon: Columns3,
+  },
+  {
     title: "Categories",
     href: "/categories",
     icon: Tags,
   },
-]
+];
 
 export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const pathname = usePathname()
-  const { data: session } = useSession()
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const pathname = usePathname();
+  const { data: session } = useSession();
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024)
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/" })
-  }
+    signOut({ callbackUrl: "/" });
+  };
 
   const userInitials = session?.user?.name
     ? session.user.name.charAt(0).toUpperCase()
-    : session?.user?.email?.charAt(0).toUpperCase() || "U"
+    : session?.user?.email?.charAt(0).toUpperCase() || "U";
 
   return (
     <>
@@ -96,7 +102,7 @@ export function Sidebar() {
         className={cn(
           "fixed left-0 top-0 z-40 h-screen w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white shadow-2xl transition-all",
           isMobile ? "w-72" : "lg:translate-x-0",
-          !isMobile && "hidden lg:block"
+          !isMobile && "hidden lg:block",
         )}
       >
         <div className="flex h-full flex-col">
@@ -135,7 +141,7 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-6">
             {navItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href;
               return (
                 <Link
                   key={item.href}
@@ -145,13 +151,15 @@ export function Sidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 group",
                     isActive
                       ? "bg-white/10 text-white shadow-sm"
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
+                      : "text-white/70 hover:bg-white/5 hover:text-white",
                   )}
                 >
-                  <item.icon className={cn(
-                    "h-5 w-5 transition-all",
-                    isActive && "text-indigo-400"
-                  )} />
+                  <item.icon
+                    className={cn(
+                      "h-5 w-5 transition-all",
+                      isActive && "text-indigo-400",
+                    )}
+                  />
                   {item.title}
                   {isActive && (
                     <motion.div
@@ -161,7 +169,7 @@ export function Sidebar() {
                     />
                   )}
                 </Link>
-              )
+              );
             })}
           </nav>
 
@@ -206,5 +214,5 @@ export function Sidebar() {
         </div>
       </motion.aside>
     </>
-  )
+  );
 }
