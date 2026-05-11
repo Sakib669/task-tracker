@@ -18,6 +18,7 @@ import {
   MoreHorizontal,
   Edit,
   X,
+  Sparkles,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,12 +40,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -56,6 +51,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { categories, Task } from "@/lib/mock-data";
 import { AddTaskModal } from "@/components/forms/AddTaskModal";
+import { AITaskGenerator } from "@/components/tasks/AITaskGenerator";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -137,6 +133,7 @@ export default function TasksPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [visibleTasks, setVisibleTasks] = useState(8);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -280,22 +277,49 @@ export default function TasksPage() {
               Manage and track all your tasks in one place.
             </p>
           </div>
-          <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md gap-2">
-                <Plus className="h-4 w-4" />
-                Add Task
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[550px]">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold">
-                  Create New Task
-                </DialogTitle>
-              </DialogHeader>
-              <AddTaskModal onClose={() => setIsAddModalOpen(false)} />
-            </DialogContent>
-          </Dialog>
+          
+          {/* Buttons Group */}
+          <div className="flex gap-2">
+            {/* AI Generate Button */}
+            <Dialog open={isAIModalOpen} onOpenChange={setIsAIModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-md gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  AI Generate
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-indigo-600" />
+                    AI Task Generator
+                  </DialogTitle>
+                </DialogHeader>
+                <AITaskGenerator
+                  onClose={() => setIsAIModalOpen(false)}
+                  onTasksCreated={fetchTasks}
+                />
+              </DialogContent>
+            </Dialog>
+
+            {/* Add Task Button */}
+            <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Task
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[550px]">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold">
+                    Create New Task
+                  </DialogTitle>
+                </DialogHeader>
+                <AddTaskModal onClose={() => setIsAddModalOpen(false)} />
+              </DialogContent>
+            </Dialog>
+          </div>
         </motion.div>
 
         {/* Filter Bar */}
@@ -402,7 +426,7 @@ export default function TasksPage() {
                           >
                             {task.title}
                           </p>
-                          {/* Clickable status badge - cycles through statuses */}
+                          {/* Clickable status badge */}
                           <Badge
                             className={`text-xs ${getStatusBadgeVariant(task.status)}`}
                             onClick={() => handleStatusCycle(task.id, task.status)}
