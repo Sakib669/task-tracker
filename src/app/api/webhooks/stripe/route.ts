@@ -50,4 +50,6 @@ export const POST = async (req: NextRequest) => {
       break;
     }
   }
+
+  return new Response(JSON.stringify({ received: true }), { status: 200 });
 };
