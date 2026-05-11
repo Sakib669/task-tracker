@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { auth } from "../../../../../auth";
 
 export const POST = async (req: NextRequest) => {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -27,18 +27,16 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Here you would typically verify the current password and update it to the new password in your database
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
     });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    //  comparing current password with the one in the database (you should hash the password in a real application)
 
     if (!user.password) {
       return NextResponse.json(
-        { error: "User does not have a password set" },
+        { error: "Cannot change password for OAuth accounts" },
         { status: 400 },
       );
     }
@@ -54,8 +52,7 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Update the user's password in the database
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({
       where: { id: session.user.id },
       data: { password: hashedNewPassword },
@@ -65,5 +62,11 @@ export const POST = async (req: NextRequest) => {
       { message: "Password updated successfully", success: true },
       { status: 200 },
     );
-  } catch (error) {}
+  } catch (error) {
+    console.error("Password change error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
 };

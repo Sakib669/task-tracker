@@ -5,7 +5,6 @@ import { auth } from "../../../../auth";
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
-    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
               name: "TaskFlow Premium Plan",
               description: "Unlock unlimited tasks and premium features",
             },
-            unit_amount: 1200, 
+            unit_amount: 1200,
             recurring: {
               interval: "month",
             },
@@ -36,7 +35,6 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ url: checkoutSession.url });
-    
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json({ error: "Failed to create checkout" }, { status: 500 });
