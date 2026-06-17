@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { auth } from "../../../../../auth";
 import { changePasswordSchema } from "@/lib/validations/user";
+import { logger } from "@/lib/logger";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -12,14 +13,14 @@ export const POST = async (req: NextRequest) => {
     }
 
     const body = await req.json();
-    
-    // Validate request body with Zod
     const validation = changePasswordSchema.safeParse(body);
-
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Invalid request data", details: validation.error.formErrors.fieldErrors },
-        { status: 400 }
+        {
+          error: "Invalid request data",
+          details: validation.error.formErrors.fieldErrors,
+        },
+        { status: 400 },
       );
     }
 
@@ -56,12 +57,14 @@ export const POST = async (req: NextRequest) => {
       data: { password: hashedNewPassword },
     });
 
+    logger.info(`Password changed for user ${session.user.id}`);
+
     return NextResponse.json(
       { message: "Password updated successfully", success: true },
       { status: 200 },
     );
   } catch (error) {
-    console.error("Password change error:", error);
+    logger.error("Password change error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
