@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check, Zap, Crown, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,10 +43,21 @@ const premiumFeatures = [
 ];
 
 export default function UpgradePage() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const [loading, setLoading] = useState(false);
   const userStatus = session?.user?.status || "FREE";
   const isPremium = userStatus === "PREMIUM";
+
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      console.log("Payment successful, refreshing session and redirecting to dashboard.");
+      update(); // Refresh the session
+      router.push("/dashboard"); // Redirect to dashboard
+    }
+  }, [searchParams, update, router]);
 
   const handleSubscribe = async () => {
     setLoading(true);

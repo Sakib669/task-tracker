@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../../../../auth";
+import { updateProfileSchema } from "@/lib/validations/user";
 
 export const PATCH = async (req: NextRequest) => {
   try {
@@ -10,18 +11,39 @@ export const PATCH = async (req: NextRequest) => {
     }
 
     const body = await req.json();
-    const { name } = body;
+    
+    // Validate request body with Zod
+    const validation = updateProfileSchema.safeParse(body);
 
-    if (!name || name.trim().length < 2) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Name must be at least 2 characters long" },
+        { error: "Invalid request data", details: validation.error.formErrors.fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const { name, email } = validation.data;
+
+    // Only update fields that are provided and valid
+    const updateData: { name?: string, email?: string } = {};
+    if (name !== undefined) {
+      updateData.name = name.trim();
+    }
+    if (email !== undefined) {
+      updateData.email = email;
+    }
+
+    // If no valid fields to update, return 400
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "No valid fields provided for update" },
         { status: 400 }
       );
     }
 
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { name: name.trim() },
+      data: updateData,
     });
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { auth } from "../../../../../auth";
+import { changePasswordSchema } from "@/lib/validations/user";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -11,21 +12,18 @@ export const POST = async (req: NextRequest) => {
     }
 
     const body = await req.json();
-    const { currentPassword, newPassword } = body;
+    
+    // Validate request body with Zod
+    const validation = changePasswordSchema.safeParse(body);
 
-    if (!currentPassword || !newPassword) {
+    if (!validation.success) {
       return NextResponse.json(
-        { error: "Current password and new password are required" },
-        { status: 400 },
+        { error: "Invalid request data", details: validation.error.formErrors.fieldErrors },
+        { status: 400 }
       );
     }
 
-    if (newPassword.length < 8) {
-      return NextResponse.json(
-        { error: "New password must be at least 8 characters" },
-        { status: 400 },
-      );
-    }
+    const { currentPassword, newPassword } = validation.data;
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
