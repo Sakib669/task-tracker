@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: taskflow-web
+    runtime: node
+    buildCommand: npm run build
+    startCommand: npm start
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: taskflow-redis
+          type: key-value
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+  - type: worker
+    name: taskflow-ai-worker
+    runtime: node
+    buildCommand: npm run build
+    startCommand: node dist/lib/ai-worker.js
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: taskflow-redis
+          type: key-value
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+
+  - type: worker
+    name: taskflow-webhook-worker
+    runtime: node
+    buildCommand: npm run build
+    startCommand: node dist/lib/webhook-worker.js
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          name: taskflow-redis
+          type: key-value
+          property: connectionString
+      - key: DATABASE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+
+  - type: key-value
+    name: taskflow-redis
+    plan: free
