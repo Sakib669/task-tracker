@@ -8,7 +8,7 @@ services:
       - key: REDIS_URL
         fromService:
           name: taskflow-redis
-          type: key-value
+          type: redis
           property: connectionString
       - key: DATABASE_URL
         sync: false
@@ -32,7 +32,7 @@ services:
       - key: REDIS_URL
         fromService:
           name: taskflow-redis
-          type: key-value
+          type: redis
           property: connectionString
       - key: DATABASE_URL
         sync: false
@@ -48,7 +48,7 @@ services:
       - key: REDIS_URL
         fromService:
           name: taskflow-redis
-          type: key-value
+          type: redis
           property: connectionString
       - key: DATABASE_URL
         sync: false
@@ -57,6 +57,6 @@ services:
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
 
-  - type: key-value
+  - type: redis
     name: taskflow-redis
     plan: free
