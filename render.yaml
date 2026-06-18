@@ -60,3 +60,4 @@ services:
   - type: redis
     name: taskflow-redis
     plan: free
+    ipAllowList: [] # allow connections from Render's internal network only
