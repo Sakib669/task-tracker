@@ -17,6 +17,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const jobId = await enqueueAIGeneration(goal, session.user.id);
-  return NextResponse.json({ jobId, status: "queued" });
+  try {
+    const jobId = await enqueueAIGeneration(goal, session.user.id);
+    return NextResponse.json({ jobId, status: "queued" });
+  } catch (error) {
+    console.error("Failed to enqueue AI job:", error);
+    return NextResponse.json(
+      { error: "Failed to schedule AI generation" },
+      { status: 500 },
+    );
+  }
 }

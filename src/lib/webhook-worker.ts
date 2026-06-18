@@ -1,7 +1,7 @@
 import { Worker } from "bullmq";
-import { redis } from "../lib/redis";
-import { prisma } from "../lib/prisma";
-import { logger } from "../lib/logger";
+import { redis } from "./redis";
+import { prisma } from "./prisma";
+import { logger } from "./logger";
 
 const worker = new Worker(
   "webhook-processing",
