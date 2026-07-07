@@ -27,9 +27,9 @@ const worker = new Worker(
       logger.info(`AI job ${job.id} created ${result.tasks.length} tasks`);
     }
 
-    // Store result in Redis for polling (status: done)
+    // ✅ Use prefixed key for AI job status
     await redis.set(
-      `job:${job.id}`,
+      `job:ai:${job.id}`,
       JSON.stringify({ status: "done" }),
       "EX",
       3600,
@@ -45,7 +45,7 @@ worker.on("failed", (job, err) => {
   logger.error(`AI job ${job?.id} failed:`, err);
   if (job) {
     redis.set(
-      `job:${job.id}`,
+      `job:ai:${job.id}`,
       JSON.stringify({ status: "failed", error: err.message }),
       "EX",
       3600,

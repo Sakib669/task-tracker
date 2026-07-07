@@ -7,7 +7,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Missing jobId" }, { status: 400 });
   }
 
-  const data = await redis.get(`job:${jobId}`);
+  // ✅ Use prefixed key
+  const data = await redis.get(`job:ai:${jobId}`);
   if (!data) {
     return NextResponse.json({ status: "pending" });
   }
