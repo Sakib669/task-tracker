@@ -7,10 +7,10 @@ import { logger } from "@/lib/logger";
 // GET - Get a specific task by ID
 export const GET = async (
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }, // ✅ params is now a Promise
 ) => {
   try {
-    const { id: taskId } = params;
+    const { id: taskId } = await params; // ✅ await the params
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -53,10 +53,10 @@ export const GET = async (
 // PATCH - Update a specific task
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }, // ✅ same fix
 ) => {
   try {
-    const { id: taskId } = params;
+    const { id: taskId } = await params; // ✅ await params
     const rawUpdateData = await req.json();
 
     const session = await auth();
@@ -129,10 +129,10 @@ export const PATCH = async (
 // DELETE - Delete a specific task
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> }, // ✅ same fix
 ) => {
   try {
-    const { id: taskId } = params;
+    const { id: taskId } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
