@@ -7,22 +7,22 @@ import { logger } from "@/lib/logger";
 // GET - Get a specific task by ID
 export const GET = async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }, // ✅ params is now a Promise
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    const { id: taskId } = await params; // ✅ await the params
+    const { id: taskId } = await params;
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized - Please login first" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -36,16 +36,19 @@ export const GET = async (
     if (!task) {
       return NextResponse.json(
         { error: "Task not found or you don't have access" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: task }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: task },
+      { status: 200 }
+    );
   } catch (error) {
     logger.error("Error fetching task:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 };
@@ -53,40 +56,42 @@ export const GET = async (
 // PATCH - Update a specific task
 export const PATCH = async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }, // ✅ same fix
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
-    const { id: taskId } = await params; // ✅ await params
+    const { id: taskId } = await params;
     const rawUpdateData = await req.json();
 
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized - Please login first" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const validation = updatePostSchema.safeParse(rawUpdateData);
     if (!validation.success) {
+      // ✅ Use .flatten() to get field errors
+      const { fieldErrors, formErrors } = validation.error.flatten();
       return NextResponse.json(
         {
           error: "Invalid request data",
-          details: validation.error.formErrors.fieldErrors,
+          details: { fieldErrors, formErrors },
         },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const updateData = validation.data;
-    if (updateData.dueDate && typeof updateData.dueDate === "string") {
+    if (updateData.dueDate && typeof updateData.dueDate === 'string') {
       (updateData as any).dueDate = new Date(updateData.dueDate);
     } else if (updateData.dueDate === null) {
       (updateData as any).dueDate = null;
@@ -102,7 +107,7 @@ export const PATCH = async (
     if (!existingTask) {
       return NextResponse.json(
         { error: "Task not found or you don't have permission to update it" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -115,13 +120,13 @@ export const PATCH = async (
 
     return NextResponse.json(
       { success: true, data: updatedTask },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     logger.error("Error updating task:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 };
@@ -129,7 +134,7 @@ export const PATCH = async (
 // DELETE - Delete a specific task
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }, // ✅ same fix
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
     const { id: taskId } = await params;
@@ -137,14 +142,14 @@ export const DELETE = async (
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized - Please login first" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
@@ -158,7 +163,7 @@ export const DELETE = async (
     if (!existingTask) {
       return NextResponse.json(
         { error: "Task not found or you don't have permission to delete it" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -170,13 +175,13 @@ export const DELETE = async (
 
     return NextResponse.json(
       { success: true, message: "Task deleted successfully" },
-      { status: 200 },
+      { status: 200 }
     );
   } catch (error) {
     logger.error("Error deleting task:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 };
