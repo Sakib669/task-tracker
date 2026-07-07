@@ -5,12 +5,17 @@ RUN apk add --no-cache dumb-init
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files AND prisma schema (needed for prisma generate)
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+COPY prisma ./prisma/
 
-# Copy source and build
+# Install ALL dependencies (including dev) – we need prisma for build
+RUN npm ci && npm cache clean --force
+
+# Copy the rest of the source code
 COPY . .
+
+# Build Next.js app and workers (build:workers runs via postbuild)
 RUN npm run build
 
 # Install PM2 globally
