@@ -1,0 +1,107 @@
+"use strict";
+"use server";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.generateTasks = generateTasks;
+const groq_sdk_1 = __importDefault(require("groq-sdk"));
+const groq = new groq_sdk_1.default({ apiKey: process.env.GROQ_API_KEY || 'gsk_dummy' });
+const categories = [
+    "Design",
+    "Development",
+    "Marketing",
+    "Sales",
+    "Support",
+    "Management",
+];
+async function generateTasks(goal) {
+    var _a, _b, _c;
+    try {
+        if (!goal || goal.trim().length < 10) {
+            return {
+                error: "Please enter a more detailed goal (at least 10 characters)",
+            };
+        }
+        const daysFromNow = (days) => {
+            const date = new Date();
+            date.setDate(date.getDate() + days);
+            return date.toISOString().split("T")[0];
+        };
+        const prompt = `You are a task management assistant. Break down the following goal into 3-5 actionable tasks.
+
+Goal: "${goal}"
+
+Return ONLY a valid JSON array of tasks. Each task must have:
+- title: A short, clear title (max 80 characters)
+- description: A brief description (max 150 characters)
+- category: One of: ${categories.join(", ")}
+- dueDate: yyyy-mm-dd format between ${daysFromNow(3)} and ${daysFromNow(14)}
+
+Example: [{"title":"Research venues","description":"Find and compare 5 venues","category":"Management","dueDate":"${daysFromNow(7)}"}]
+
+Return ONLY the JSON array. No markdown, no code blocks, no additional text. Just the raw JSON array.`;
+        const completion = await groq.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a helpful task management assistant that returns only valid JSON arrays.",
+                },
+                { role: "user", content: prompt },
+            ],
+            model: "llama-3.3-70b-versatile",
+            temperature: 0.7,
+            max_tokens: 1000,
+        });
+        let content = (_b = (_a = completion.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content;
+        if (!content) {
+            return { error: "No response from AI. Please try again." };
+        }
+        // Clean response
+        content = content
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
+        let tasks;
+        try {
+            tasks = JSON.parse(content);
+        }
+        catch (_d) {
+            // Try to extract JSON if wrapped in text
+            const jsonMatch = content.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                try {
+                    tasks = JSON.parse(jsonMatch[0]);
+                }
+                catch (_e) {
+                    return { error: "Failed to parse AI response. Please try again." };
+                }
+            }
+            else {
+                return { error: "Failed to parse AI response. Please try again." };
+            }
+        }
+        if (!Array.isArray(tasks) || tasks.length === 0) {
+            return { error: "No tasks generated. Please try with a different goal." };
+        }
+        tasks = tasks.slice(0, 5).map((task, index) => {
+            var _a, _b, _c;
+            return ({
+                title: ((_a = task.title) === null || _a === void 0 ? void 0 : _a.trim()) || `Task ${index + 1}`,
+                description: ((_b = task.description) === null || _b === void 0 ? void 0 : _b.trim()) || "",
+                category: categories.includes((_c = task.category) === null || _c === void 0 ? void 0 : _c.trim())
+                    ? task.category.trim()
+                    : "Development",
+                dueDate: task.dueDate || null,
+            });
+        });
+        return { tasks };
+    }
+    catch (error) {
+        console.error("AI generation error:", error);
+        if ((_c = error === null || error === void 0 ? void 0 : error.message) === null || _c === void 0 ? void 0 : _c.includes("API key")) {
+            return { error: "Invalid API key. Please check your Groq API key." };
+        }
+        return { error: "Failed to generate tasks. Please try again." };
+    }
+}

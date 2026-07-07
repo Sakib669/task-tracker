@@ -30,6 +30,8 @@ const freeFeatures = [
   "Mobile access",
 ];
 
+import { Suspense } from "react";
+
 const premiumFeatures = [
   "Unlimited tasks",
   "Advanced task management",
@@ -42,7 +44,7 @@ const premiumFeatures = [
   "24/7 Priority support",
 ];
 
-export default function UpgradePage() {
+function UpgradePageContent() {
   const { data: session, update } = useSession();
   const [loading, setLoading] = useState(false);
   const userStatus = session?.user?.status || "FREE";
@@ -196,5 +198,19 @@ export default function UpgradePage() {
         </motion.div>
       </div>
     </motion.div>
+  );
+}
+
+export default function UpgradePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        </div>
+      }
+    >
+      <UpgradePageContent />
+    </Suspense>
   );
 }

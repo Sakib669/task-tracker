@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "npx prisma generate && next build",
-    "build:workers": "tsc -p tsconfig.workers.json",
+    "build:workers": "tsc -p tsconfig.workers.json && node patch-prisma.js",
     "postbuild": "npm run build:workers",
     "start": "next start",
     "worker:ai": "tsx src/lib/ai-worker.ts",

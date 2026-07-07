@@ -1,27 +1,25 @@
 FROM node:20-alpine
 
-# Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
 WORKDIR /app
 
-# Copy package files AND prisma schema (needed for prisma generate)
+# Copy package files and Prisma schema
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install ALL dependencies (including dev) – we need prisma for build
-RUN npm ci && npm cache clean --force
+# Install dependencies with longer timeout and legacy peer deps
+RUN npm install --legacy-peer-deps --no-optional --fetch-timeout=60000 && npm cache clean --force
 
-# Copy the rest of the source code
+# Copy source code
 COPY . .
 
-# Build Next.js app and workers (build:workers runs via postbuild)
+# Build Next.js app and workers
 RUN npm run build
 
-# Install PM2 globally
+# Install PM2
 RUN npm install -g pm2
 
-# Copy PM2 config
 COPY pm2.config.js .
 
 EXPOSE 3000

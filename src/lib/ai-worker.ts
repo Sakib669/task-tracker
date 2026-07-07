@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Worker } from "bullmq";
 import { redis } from "./redis";
 import { prisma } from "./prisma";
@@ -36,7 +37,7 @@ const worker = new Worker(
     );
   },
   {
-    connection: redis,
+    connection: redis as any,
     concurrency: 5,
   },
 );

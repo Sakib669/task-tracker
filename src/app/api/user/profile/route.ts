@@ -14,10 +14,11 @@ export const PATCH = async (req: NextRequest) => {
     const body = await req.json();
     const validation = updateProfileSchema.safeParse(body);
     if (!validation.success) {
+      const { fieldErrors, formErrors } = validation.error.flatten();
       return NextResponse.json(
         {
           error: "Invalid request data",
-          details: validation.error.formErrors.fieldErrors,
+          details: { fieldErrors, formErrors },
         },
         { status: 400 },
       );
